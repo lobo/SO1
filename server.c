@@ -1,3 +1,12 @@
+// information of the client
+typedef struct 
+{
+	int client_id;	// for internal use only
+	void * fd;		// depends on the implementation
+}ClientInfo;
+
+
+
 struct fds {
 	int wfd;
 	int rfd;
@@ -20,13 +29,13 @@ int server(int wfd, int rfd) {
 }
 
 // mi servidor recibe un numero
-ResponseData * Handler(RequestData * req){
-	ResponseData * res = malloc(sizeof(ResponseData));
+ComData * Handler(ComData * req){
+	ComData * res = malloc(sizeof(ComData));
 	res->data = malloc(sizeof(int));
 	res->size = sizeof(int);
 
 	// right side of equal: la capara de marshalling mas villera del universo :)
-	// un servidor perfecto: suma 1
+	// un servidor perfecto: suma 12
 	*(int*)&res->data = ((int)(req->data) + 1);
 	return res;
 }

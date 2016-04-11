@@ -1,13 +1,10 @@
-#include "client.h"
-#include <unistd.h>
-
 typedef ResponseData * (*RequestHandler) (RequestData * req);
 
-ResponseData * Request(Connection * connection, RequestData * req){
+ComData * SendData(Connection * connection, ComData * req){
 	int wfd = *((int*)(connection->address))[0];
 	int rfd = *((int*)(connection->address))[1];
 
-	ResponseData * res = malloc(sizeof(ResponseData));
+	ComData * res = malloc(sizeof(ComData));
 	res->data = malloc(1024); // hard-coded: depende del tamaña del response. // voy a ir haciendo un realloc de data segun lo que llegue.
 	res->size = 1024;
 
@@ -18,13 +15,13 @@ ResponseData * Request(Connection * connection, RequestData * req){
 	return res;
 }
 
-// * El select va a aca
-void ListenToRequest(Connection * connection, RequestHandler requestHandler){
+// * El select va aca
+void Listen(Connection * connection, RequestHandler requestHandler){
 	int wfd = *((int*)(connection->address))[0];
 	int rfd = *((int*)(connection->address))[1];
 
 	while(1){
-		RequestData * req = malloc(sizeof(RequestData));
+		ComData * req = malloc(sizeof(ComData));
 		// seguramente dentro del while(1) o del requestHanlder de mas abajo
 		// haga un fork
 		req->data = malloc(1024);
@@ -32,7 +29,7 @@ void ListenToRequest(Connection * connection, RequestHandler requestHandler){
 
 		read(rfd, req->data, req->size);
 		// se desbloqueo y anduvo todo bien
-		ResponseData * res = requestHandler(req);
+		ComData * res = requestHandler(req);
 
 		write(wfd, res->data, res->size);
 
@@ -43,3 +40,15 @@ void ListenToRequest(Connection * connection, RequestHandler requestHandler){
 	}
 }
 
+// abre socket/pipe
+int Connect(Connection * connection) { 
+
+}
+
+int Disconnect(Connection * connection) {
+
+}
+
+int Accept(Connection * connection) {
+	
+}
