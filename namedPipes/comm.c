@@ -22,6 +22,7 @@ void Listen(void * connection, ComData requestHandler){
 		perror("Error opening the file");
 		exit(1);
 	}
+    printf("> Listening to connection: %s\n", (char *) connection);
 }
 
 // opens a pipe:
