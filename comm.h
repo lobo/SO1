@@ -5,16 +5,9 @@
 // this is what will be sent
 typedef struct 
 {
-	char * data;
-	int size;
+	char * message;
+	int client_id;
 } ComData;
-
-// information of the client
-//typedef struct 
-//{
-//	int client_id;	// for internal use only
-//	void * fd;		// depends on the implementation
-//}ClientInfo;
 
 // recibe la data del request y la convierte en un response
 // en vez de bloquearme, me quita el flujo de ejecucion, no retorna data, simplemente no retorna
