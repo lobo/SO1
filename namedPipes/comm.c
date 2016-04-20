@@ -6,10 +6,10 @@
 #include "../comm.h"
 
 int Accept(void * connection){
-    char * myfifo = (char *) connection;
+    char * namedPipe = (char *) connection;
     // create the FIFO (named pipe)
-    //char * myfifo = "../fifos/myfifo";
-    return mkfifo(myfifo, 0666) ? -1 : 0; 
+    //char * namedPipe = "../fifos/namedPipe";
+    return mkfifo(namedPipe, 0666) ? -1 : 0; 
 }
 
 ComData * SendData(void * connection, ComData * request){
@@ -17,19 +17,16 @@ ComData * SendData(void * connection, ComData * request){
 	return request;
 }
 
-// incorrect: should not be doing all these actions 
-// but don't know where to put them
 void Listen(void * connection, ComData requestHandler){
-	int fd = Connect(connection);
-
-	SendData((void *) &fd, "Hi, brother!");
-	Disconnect((void *) &fd);
+	if(open(connection, O_RDWR) == -1){
+		perror("Error opening the file");
+		exit(1);
+	}
 }
-
 
 // opens a pipe:
 // idealmente pasarle un char * con el nombre de la connection
-// deberia ser algo asi: "../fifos/myfifo"
+// deberia ser algo asi: "../fifos/namedPipe"
 // to-do? generate a uuid per connection
 int Connect(void * connection){
     // check if the connection can be created
@@ -38,8 +35,7 @@ int Connect(void * connection){
     	return -1;
     }
     
-    // opens the pipe for writing only
-    return open(connection, O_WRONLY); 
+    return 0; // todo bien
 }
 
 // cerras el pipe

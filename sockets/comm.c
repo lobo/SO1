@@ -20,6 +20,9 @@ int Connect(Connection * connection);
 int Disconnect(Connection * connection);
 
 int Accept(Connection * connection){
+
+
+    
     //Accept an incoming connection
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
