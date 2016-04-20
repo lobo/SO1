@@ -1,61 +1,85 @@
-// SEMAFOROS DE THREADS: http://www.csc.villanova.edu/~mdamian/threads/posixsem.html
+#include <stdio.h>
+#include <string.h>    //strlen
+#include <stdlib.h>    //strlen
+#include <sys/socket.h>
+#include <arpa/inet.h> //inet_addr
+#include <unistd.h>    //write
+#include <pthread.h> //for threading , link with lpthread
 
 typedef struct
 {
-    int sockfd;
-    int clientid;
+    int socket_fd;
+    int client_id;
 
 }Connection;
 
 
-ComData * SendData(Connection * connection, ComData * req);
+ComData * SendData(Connection * connection, ComData * request){
+    if(write(connection->socket_fd, request-> message, sizeof(request->message)) < 0){
+        perror("ERROR writing to socket");
+        exit(1);
+    }
+    return request->message;
+}
 
 void Listen(Connection * connection, ComData requestHandler){
-        //Listen
     listen(socket_desc , 3);
 }
 
-int Connect(Connection * connection);
-
-int Disconnect(Connection * connection);
-
-int Accept(Connection * connection){
-
-
-    
-    //Accept an incoming connection
-    puts("Waiting for incoming connections...");
-    c = sizeof(struct sockaddr_in);
-    while( (new_socket = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
-    {
-        puts("Connection accepted");
-         
-        //Reply to the client
-        message = "Hello Client , I have received your connection. And now I will assign a handler for you\n";
-        write(new_socket , message , strlen(message));
-         
-        pthread_t sniffer_thread;
-        new_sock = malloc(1);
-        *new_sock = new_socket;
-         
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0)
-        {
-            perror("could not create thread");
-            return 1;
-        }
-         
-        //Now join the thread , so that we dont terminate before the thread
-        //pthread_join( sniffer_thread , NULL);
-        puts("Handler assigned");
-    }
+int Connect(Connection * connection){
+    int socket_desc;
+    struct sockaddr_in server;
      
-    if (new_socket<0)
+    //Create socket
+    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
+    if (socket_desc == -1)
     {
-        perror("accept failed");
-        return 1;
+        perror("Could not create socket");
+        exit(1);
     }
+    
+    //server.sin_addr.s_addr = inet_addr("74.125.235.20");
+    server.sin_addr.s_addr = inet_addr((char *) connection));
+    server.sin_family = AF_INET;
+    server.sin_port = htons( 80 );
+ 
+    //Bind
+    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0){
+        puts("bind failed");
+    }
+
+    puts("bind done");
 }
 
+int Disconnect(Connection * connection){
+    close(connection->socket_fd);
+}
+
+int Accept(Connection * connection){
+    struct sockaddr_in client;
+    int c;
+
+
+    puts("Waiting for incoming connections...");
+    c = sizeof(struct sockaddr_in);
+
+    new_socket = accept(connection->socket_fd, (struct sockaddr *)&client, (socklen_t*)&c);
+
+    if (new_socket < 0)
+    {
+        perror("Connection to that socket not accepted.\n");
+        return 1;
+    }
+     
+    puts("Connection accepted.\n");
+     
+    //Reply to the client
+    message = "Hello Client , I have received your connection.\n";
+    write(new_socket, message , strlen(message));
+}
+
+
+// ---> Martin <----
 
 Connection *_create_connection(char * ip, int port){
 
@@ -79,7 +103,7 @@ Connection *_create_connection(char * ip, int port){
 }
 
 
- 
+// Old script below: 
 int main(int argc , char *argv[])
 {
     int socket_desc , new_socket , c , *new_sock;
