@@ -1,10 +1,6 @@
 #ifndef COM_H
 #define COM_H
 
-typedef struct
-{
-	char * address;
-} Connection;
 
 // this is what will be sent
 typedef struct 
@@ -27,25 +23,25 @@ typedef ComData * (* RequestHandler) (ComData * req);
 
 
 
-ComData * SendData(Connection * connection, ComData * req);
+ComData * SendData(void * connection, ComData * req);
 
 // old ListenToRequest
 void Listen(
-	Connection * connection, 
+	void * connection, 
 	ComData requestHandler
 );
 
 
 // * Sockets: te conectas a un socket
 // * Pipe: abris un pipe
-int Connect(Connection * connection);
+int Connect(void * connection);
 // generate a uuid per connection
 
 // * Sockets: te desconectas de ese socket
 // * Pipe: cerras el pipe
-int Disconnect(Connection * connection);
+int Disconnect(void * connection);
 
-int Accept(Connection * connection);
+int Accept(void * connection);
 
 
 
