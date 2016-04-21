@@ -23,7 +23,7 @@ ComData * SendData(Connection * connection, ComData * request){
 }
 
 void Listen(Connection * connection, ComData requestHandler){
-    listen(socket_desc , 3);
+    listen(connection->socket_fd , 3);
 }
 
 int Connect(Connection * connection){
@@ -44,7 +44,7 @@ int Connect(Connection * connection){
     server.sin_port = htons( 80 );
  
     //Bind
-    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0){
+    if( bind(socket_desc, (struct sockaddr *)&server , sizeof(server)) < 0){
         puts("bind failed");
     }
 
