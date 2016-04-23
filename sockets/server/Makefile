@@ -1,6 +1,6 @@
 EXE = server.bin
 GCC = gcc
-GCCFLAGS = -Wall -I./../include
+GCCFLAGS = -Wall -I./../includes
 SOURCES_C = $(wildcard ../objects/*.c)
 MAIN_C = $(wildcard *.c)
 OBJECTS = $(SOURCES_C:.c=.o)

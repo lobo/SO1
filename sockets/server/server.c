@@ -14,7 +14,7 @@ void* connection_handler(void *socket_desc)
     char *message;
      
     //Send some messages to the client
-    message = "Greetings! I am your connection handler\n";
+    message = "Hola cliente!\n";
     send_data(client_socket_fd , message);
     
        
@@ -34,11 +34,11 @@ void server_main (int listener_descriptor, int new_connection_descriptor){
          
         if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0)
         {
-            perror("could not create thread");
+            perror("No se pudo crear un thread.");
           	return;
         }
 
-        puts("Se creo un thread nuevo para una nueva conexion.");
+        printf("Se conectó al servidor un nuevo cliente con el socket_fd: %d\n", new_connection_descriptor);
 
 }
  

@@ -15,7 +15,7 @@ int main(int argc , char *argv[])
     sock = connect_to((void*)&server_info);
     receive_data(sock, buffer);
 
-    printf("Recibi %s\n",buffer);
+    printf("Recibí: %s\n",buffer);
 
 
     return 0;

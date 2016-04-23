@@ -1,4 +1,4 @@
-all:  client server
+all: client server
 
 client:
 	cd client; make all
@@ -9,3 +9,5 @@ server:
 clean:
 	cd client; make clean
 	cd server; make clean
+
+.PHONY: client server
