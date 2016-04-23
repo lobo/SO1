@@ -8,11 +8,9 @@
 #include "comm.h"
 
 typedef struct{
-
     int socketfd;
     struct * sockaddr_un s_address;
-
-}socket_t;
+} socket_t;
 
 socket_t * _create_socket(void * address){
 
@@ -56,8 +54,6 @@ void _delete_socket(socket_t * socket){
 
 
 int connect(void * address){
-
-    struct sockaddr_un remote;
     socket_t * my_socket;
 
     if ( my_socket = _create_socket(address) == -1){
@@ -74,6 +70,10 @@ int connect(void * address){
 
 }
 
+int disconnect(int connection_descriptor){
+
+}
+
 int send_data(int connection_descriptor, void * message){
 
     int bytes_to_write = strlen((char *) message) + 1;
@@ -84,8 +84,6 @@ int send_data(int connection_descriptor, void * message){
 }
 
 int receive_data(int connection_descriptor, void * ret_buffer){
-
-
 
 }
 
@@ -125,3 +123,5 @@ void listen(void * address, main_handler handler){
     return 0;
 
 }
+
+

@@ -9,7 +9,7 @@
  
 #include <pthread.h> //for threading , link with lpthread
  
-void *connection_handler(void *);
+void * connection_handler(void *);
  
 int main(int argc , char *argv[])
 {
