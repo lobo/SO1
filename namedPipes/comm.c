@@ -11,18 +11,6 @@ typedef void (* main_handler) (int new_connection_descriptor);
 int connect_to(void * address);
 
 
-
-
-
-
-int Accept(void * connection){
-    char * namedPipe = (char *) connection;
-    // create the FIFO (named pipe)
-    //char * namedPipe = "../fifos/namedPipe";
-    return mkfifo(namedPipe, 0666) ? -1 : 0; 
-}
-
-
 // opens a pipe:
 // idealmente pasarle un char * con el nombre de la connection
 // deberia ser algo asi: "../fifos/namedPipe"
@@ -37,16 +25,12 @@ int Connect(void * connection){
     return 0; // todo bien
 }
 
-
-
-
-
 int disconnect(int connection_descriptor){
     if (close(connection_descriptor) == 0){
-        printf("El pipe se cerro correctamente.\n");
+        printf("Pipe closed successfully.\n");
     }
     else {
-        printf("El pipe no se pudo cerrar. Aborting.\n");
+        printf("Pipe could not be closed. Aborting.\n");
         exit(1);
     }
     return (_disconnect(connection_descriptor) == 0) ? 0 : 1;
@@ -56,7 +40,7 @@ int disconnect(int connection_descriptor){
 int _disconnect(int connection_descriptor){
     // busca el connection_descriptor y lo guarda en un string
     // FALTA IMPLEMENTAR
-    char * pipeName;
+    char * pipeName; // buscarlo y asignarlo aca
     if (unlink(pipeName) == 0) {
         printf("Unlinking was successful.\n");
         return 0;
@@ -70,7 +54,7 @@ int _disconnect(int connection_descriptor){
 int send_data(int connection_descriptor, void * message){
     int written_bytes;
     if((written_bytes = write(connection_descriptor, (char *) message, strlen(message))) == -1){
-        printf("No se pudo mandar la información en el pipe: %d\n", connection_descriptor);
+        printf("Could not send information to this pipe: %d\n", connection_descriptor);
         return -1;
     }
     return written_bytes; // will be 0 if no bytes are written
@@ -80,7 +64,7 @@ int receive_data(int connection_descriptor, void * ret_buffer){
     int read_bytes;
     if ((read_bytes = read(connection_descriptor, (char *) ret_buffer, strlen(ret_buffer))) == -1)
     {
-        printf("Hubo un error leyendo informacion del pipe: %d\n", connection_descriptor);
+        printf("There was an error reading information from this pipe: %d\n", connection_descriptor);
         return -1;
     }
     return read_bytes;
