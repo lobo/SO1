@@ -32,14 +32,14 @@ int connect_to(void * address){
     struct sockaddr_in sock;
 
     if ( (socket_fd = socket(AF_INET , SOCK_STREAM , 0)) == -1){
-        perror("No se pudo crear el socket.");        
+        perror("Error in socket creation");        
         return -1;
     } 
 
     _build_socket(address, &sock);
 
     if (connect(socket_fd, (struct sockaddr *)&sock, sizeof(sock)) == -1) {
-        perror("No se pudo conectar con el servidor.");
+        perror("Error while trying to connect");
         return -1;
     }
 
@@ -71,7 +71,7 @@ int receive_data(int connection_descriptor, void * ret_buffer){
 
     if( recv(connection_descriptor , ret_buffer , 2000 , 0) < 0)  //cambiar magic number 2000
         {
-            puts("No se pudo recibir data.");
+            puts("Error while reading");
             return -1;
         }
 
@@ -87,7 +87,7 @@ int listen_connections(void * address, main_handler handler){
     struct sockaddr_in client;
 
     if ( (listener_socket = socket(AF_INET , SOCK_STREAM , 0)) == -1){
-        perror("No se pudo crear el socket que escucha.");        
+        perror("Error in socket creation");        
         return -1;
     } 
 
@@ -96,7 +96,7 @@ int listen_connections(void * address, main_handler handler){
 
     if( bind(listener_socket,(struct sockaddr *)&sock , sizeof(sock)) < 0)
     {
-        perror("No se pudo bindear el socket del servidor.");
+        perror("Error in socket binding");
         return -1;
     }
      
@@ -112,7 +112,7 @@ int listen_connections(void * address, main_handler handler){
 
      if (new_socket_fd < 0)
     {
-        perror("No se pudo aceptar la conexion entrante.");
+        perror("Error while trying to accept incoming connection");
         return -1;
     }
 
