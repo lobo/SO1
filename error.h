@@ -1,1 +1,0 @@
--errores con lista y un struct
