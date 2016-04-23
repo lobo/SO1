@@ -5,6 +5,16 @@
 #include <unistd.h>
 #include "../comm.h"
 
+
+typedef void (* main_handler) (int new_connection_descriptor);
+
+int connect_to(void * address);
+
+
+
+
+
+
 int Accept(void * connection){
     char * namedPipe = (char *) connection;
     // create the FIFO (named pipe)
@@ -12,10 +22,97 @@ int Accept(void * connection){
     return mkfifo(namedPipe, 0666) ? -1 : 0; 
 }
 
-ComData * SendData(void * connection, ComData * request){
-	write(connection, request->message, sizeof(request->message));
-	return request;
+
+// opens a pipe:
+// idealmente pasarle un char * con el nombre de la connection
+// deberia ser algo asi: "../fifos/namedPipe"
+// to-do? generate a uuid per connection
+int Connect(void * connection){
+    // check if the connection can be created
+    if(Accept(connection)){
+        perror("The connection was not accepted.");
+        return -1;
+    }
+    
+    return 0; // todo bien
 }
+
+
+
+
+
+int disconnect(int connection_descriptor){
+    if (close(connection_descriptor) == 0){
+        printf("El pipe se cerro correctamente.\n");
+    }
+    else {
+        printf("El pipe no se pudo cerrar. Aborting.\n");
+        exit(1);
+    }
+    return (_disconnect(connection_descriptor) == 0) ? 0 : 1;
+}
+
+
+int _disconnect(int connection_descriptor){
+    // busca el connection_descriptor y lo guarda en un string
+    // FALTA IMPLEMENTAR
+    char * pipeName;
+    if (unlink(pipeName) == 0) {
+        printf("Unlinking was successful.\n");
+        return 0;
+    }
+    else {
+        printf("There was an error doing the unlinking. Aborting.\n");
+        exit(1);
+    }
+}
+
+int send_data(int connection_descriptor, void * message){
+    int written_bytes;
+    if((written_bytes = write(connection_descriptor, (char *) message, strlen(message))) == -1){
+        printf("No se pudo mandar la información en el pipe: %d\n", connection_descriptor);
+        return -1;
+    }
+    return written_bytes; // will be 0 if no bytes are written
+}
+
+int receive_data(int connection_descriptor, void * ret_buffer){
+    int read_bytes;
+    if ((read_bytes = read(connection_descriptor, (char *) ret_buffer, strlen(ret_buffer))) == -1)
+    {
+        printf("Hubo un error leyendo informacion del pipe: %d\n", connection_descriptor);
+        return -1;
+    }
+    return read_bytes;
+}
+
+int listen_connections(void * address, main_handler handler){
+    pipe = open("server_client_pipeline", O_RDONLY);     //Open for reading only. 
+    if(pipe >= 0)                       //Upon successful completion, open function return a non-negative integer
+        fprintf(stderr, "SERVER READY\n");
+    else{
+        fprintf(stderr, "ERROR, CANNOT OPEN FIFO PIPE\nABORT EXECUTION\n");  
+        exit(1);
+    }
+
+    while(1){
+        message = readClient(pipe,message);
+        if(strcmp(message,"logout") == 0){
+            closeConnection(pipe);
+            break;
+        }
+        serverWrite(message);
+    }
+}
+
+
+
+
+
+
+// Old below:
+
+
 
 void Listen(void * connection, ComData requestHandler){
 	if(open(connection, O_RDWR) == -1){
@@ -25,25 +122,7 @@ void Listen(void * connection, ComData requestHandler){
     printf("> Listening to connection: %s\n", (char *) connection);
 }
 
-// opens a pipe:
-// idealmente pasarle un char * con el nombre de la connection
-// deberia ser algo asi: "../fifos/namedPipe"
-// to-do? generate a uuid per connection
-int Connect(void * connection){
-    // check if the connection can be created
-    if(Accept(connection)){
-    	perror("The connection was not accepted.");
-    	return -1;
-    }
-    
-    return 0; // todo bien
-}
 
-// cerras el pipe
-int Disconnect(void * connection){
-	close((int)connection);
-	/* remove the FIFO */
-	unlink(connection);
-}
+
 
 

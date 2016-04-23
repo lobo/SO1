@@ -39,7 +39,6 @@ socket_t * _create_socket(){
 
     if (ret_socket == NULL) return NULL;
 
-
     ret_socket->s_address = (struct sockaddr_in *) malloc(sizeof(struct sockaddr_in));
 
     if (ret_socket->s_address == NULL){

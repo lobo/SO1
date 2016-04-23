@@ -29,23 +29,9 @@ int disconnect(int connection_descriptor);
 
 int send_data(int connection_descriptor, void * message);
 
-int recieve_data(int connection_descriptor, void *ret_buffer)
+int receive_data(int connection_descriptor, void *ret_buffer);
 
 void listen(void * address, main_handler handler);
-
-
-// * Sockets: te conectas a un socket
-// * Pipe: abris un pipe
-
-// generate a uuid per connection
-
-// * Sockets: te desconectas de ese socket
-// * Pipe: cerras el pipe
-
-
-//int accept(void * connection);
-
-
 
 
 
