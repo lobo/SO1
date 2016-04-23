@@ -19,7 +19,7 @@ typedef struct
 // en vez de bloquearme, me quita el flujo de ejecucion, no retorna data, simplemente no retorna
 // cada vez que hay un request, deveulve un requesthandler que lo que tiene que retornar es un requestdata.
 
-typedef void (* main_handler) (int new_connection_descriptor);
+typedef void (* main_handler) (int listener_descriptor, int new_connection_descriptor);
 
 int connect_to(void * address);
 

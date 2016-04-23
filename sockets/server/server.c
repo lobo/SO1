@@ -10,7 +10,7 @@
 
 void *connection_handler(void *);
 
-void funcion_prueba (int new_connection_descriptor){
+void funcion_prueba (int listener_descriptor, int new_connection_descriptor){
 
     printf("Hola, acepte la conexion %d\n",new_connection_descriptor);
 
