@@ -13,9 +13,12 @@ int main(int argc , char *argv[])
     char buffer[1000];
     
     sock = connect_to((void*)&server_info);
-    receive_data(sock, buffer);
 
-    printf("Recibí: %s\n",buffer);
+    
+    while(1){
+    	
+    	if (receive_data(sock, buffer)) printf("Recibí: %s\n",buffer);
+    }
 
 
     return 0;

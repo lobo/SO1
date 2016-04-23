@@ -20,6 +20,8 @@ void* connection_handler(void *socket_desc)
        
 	disconnect(client_socket_fd);  
     free(socket_desc);
+
+    printf("Thread terminado. Socket cerrado.\n");
    
    	return NULL;
      

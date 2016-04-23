@@ -68,14 +68,14 @@ int send_data(int connection_descriptor, void * message){
 
 int receive_data(int connection_descriptor, void * ret_buffer){
 
-
-    if( recv(connection_descriptor , ret_buffer , 2000 , 0) < 0)  //cambiar magic number 2000
+    int read_bytes;
+    if( (read_bytes = recv(connection_descriptor , ret_buffer , 2000 , 0)) < 0)  //cambiar MN 2000. MSG_WAITALL en flag?
         {
             puts("Error while reading");
             return -1;
         }
 
-    return 0;
+    return read_bytes;
 
 }
     
