@@ -1,8 +1,13 @@
-all: comm server
+all: client server
 
-comm: comm.c
-	gcc -o comm comm.c
-server: server.c
-	gcc -o server server.c
+client:
+	cd client; make all
+
+server:
+	cd server; make all
+
 clean:
-	rm comm server server_pipeline
+	cd client; make clean
+	cd server; make clean
+
+.PHONY: client server
