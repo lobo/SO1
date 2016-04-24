@@ -21,7 +21,7 @@ main(int argc, char **argv){
 	char * message;
 	int pipe;
 
-	char * server_pipeline = "server_pipeline";
+	char * server_pipeline = "chat_pipeline";
 
 	message = (char *) malloc(MESSAGE_SIZE * sizeof(char));
 	pipe = mkfifo(server_pipeline, 0666);  

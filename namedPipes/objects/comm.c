@@ -1,22 +1,21 @@
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include "comm.h"
-#include <stdlib.h>
-#include <string.h>
 
-
-typedef void (* main_handler) (int new_connection_descriptor);
-
-int connect_to(void * address);
+int connect_to(void * address){
+	//abro el fifo y devuelvo el fd como read & write.
+	FILE* fd;
+	
+	if((fd = fopen((char*)address, "r+")) == NULL) {
+		perror("No se pudo obtener el fd del fifo... debe estar siendo usado.");
+		return -1;
+	}
+	
+	return fd;
+}
 
 int _disconnect(int connection_descriptor){
     // busca el connection_descriptor y lo guarda en un string
     // FALTA IMPLEMENTAR
-    char * pipeName; // buscarlo y asignarlo aca
-    if (unlink(pipeName) == 0) {
+    if (unlink(MYFIFO) == 0) {
         printf("Unlinking was successful.\n");
         return 0;
     }
@@ -34,21 +33,22 @@ int disconnect(int connection_descriptor){
         printf("Pipe could not be closed. Aborting.\n");
         exit(1);
     }
-    return (_disconnect(connection_descriptor) == 0) ? 0 : 1;
+    return (_disconnect(connection_descriptor) == 0) ? 0 : -1;
 }
 
 int send_data(int connection_descriptor, void * message){
     int written_bytes;
+    
     if((written_bytes = write(connection_descriptor, (char *) message, strlen(message))) == -1){
         printf("Could not send information to this pipe: %d\n", connection_descriptor);
         return -1;
     }
-    return written_bytes; // will be 0 if no bytes are written
+    return written_bytes;
 }
 
 int receive_data(int connection_descriptor, void * ret_buffer){
     int read_bytes;
-    if ((read_bytes = read(connection_descriptor, (char *) ret_buffer, strlen(ret_buffer))) == -1)
+    if ((read_bytes = read(connection_descriptor, (char*) ret_buffer, strlen((char*)ret_buffer))) == -1)
     {
         printf("There was an error reading information from this pipe: %d\n", connection_descriptor);
         return -1;

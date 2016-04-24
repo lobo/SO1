@@ -1,11 +1,23 @@
-#ifndef COM_H
-#define COM_H
+#ifndef COMM_H
+#define COMM_H
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MYFIFO "/tmp/myfifo"
 
 typedef struct
 {
 	char * ip;
 	int port;
-}socket_connection_info;
+} socket_connection_info;
+
+typedef char* fifo_t;
 
 typedef void (* main_handler) (int new_connection_descriptor);
 

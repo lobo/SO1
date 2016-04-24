@@ -17,7 +17,8 @@ int main(int argc , char *argv[])
     
     while(1){
     	
-    	if (receive_data(sock, buffer)) printf("Recibí: %s\n",buffer);
+    	if (receive_data(sock, buffer))
+			printf("Recibí: %s\n",buffer);
     }
 
 
