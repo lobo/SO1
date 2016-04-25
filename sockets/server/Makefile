@@ -1,6 +1,6 @@
 EXE = server.bin
 GCC = gcc
-GCCFLAGS = -Wall -I./../includes
+GCCFLAGS = -Wall -I./../includes -lpthread
 SOURCES_C = $(wildcard ../objects/*.c)
 MAIN_C = $(wildcard *.c)
 OBJECTS = $(SOURCES_C:.c=.o)

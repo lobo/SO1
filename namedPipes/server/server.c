@@ -23,7 +23,7 @@ void * connection_handler(void *socket_desc)
 
     if (receive_data(client_socket_fd, buffer)) printf("Recibí: %s\n",buffer);
     
-	disconnect(client_socket_fd);  
+    disconnect(client_socket_fd);  
     free(socket_desc);
 
     printf("Thread terminado. Socket cerrado.\n");
