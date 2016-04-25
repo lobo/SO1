@@ -71,7 +71,7 @@ int receive_data(int connection_descriptor, void * ret_buffer){
     int read_bytes;
     if( (read_bytes = recv(connection_descriptor , ret_buffer , 2000 , 0)) < 0)  //cambiar MN 2000. MSG_WAITALL en flag?
         {
-            puts("Error while reading");
+            perror("Error while reading");
             return -1;
         }
 

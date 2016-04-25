@@ -47,10 +47,12 @@ int main(int argc , char *argv[])
 {
     socket_connection_info server_info;
 
-    server_info.ip = strdup("0");
+    strcpy(server_info.ip, "0");
     server_info.port = 8888;
 
     listen_connections((void*)&server_info, server_main);
 
     return 0;
+
+
 }

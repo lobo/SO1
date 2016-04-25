@@ -1,4 +1,4 @@
-EXE = client.bin
+EXE = server.bin
 GCC = gcc
 GCCFLAGS = -Wall -I./../includes
 SOURCES_C = $(wildcard ../objects/*.c)
