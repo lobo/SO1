@@ -156,11 +156,13 @@ void _delete_fifo(int pipe_fd){ //que le paso? el pipefd, el pipe, el address?
 
 int connect_to(void * address){ 
 
-    char connection_string[20], receive_buffer[20], aux_buffer[20];
+    char connection_string[20], receive_buffer[20], aux_buffer[40];
     int fd;
     int pid = getpid();
 
-    sprintf(aux_buffer, "%s_%s", (char*) address, "r"); 
+    socket_connection_info * socket_info = (socket_connection_info *) address; 
+
+    sprintf(aux_buffer, "/tmp/%s_%s", socket_info->ip, "r"); 
 
     if ( (fd = open( (char *) aux_buffer, O_WRONLY)) < 0) 
         return raise_error(ERR_CON_REFUSED);
@@ -171,7 +173,7 @@ int connect_to(void * address){
     write(fd, connection_string, strlen((char *) connection_string) + 1);
     close(fd);
 
-    sprintf(aux_buffer, "%s_%s", (char*) address, "w"); 
+    sprintf(aux_buffer, "/tmp/%s_%s", socket_info->ip, "w"); 
     
     if ( (fd = open(aux_buffer, O_RDONLY)) < 0)
         return raise_error(ERR_CON_TIMEOUT); //Timeout?
@@ -241,11 +243,14 @@ int listen_connections(void * address, main_handler handler){ //char condition y
     
     fifo_handler * listener_fifo;
     int new_connection_descriptor;
-    char aux_buffer[20];
+    char aux_buffer[20], aux_buff[40];
 
-    listener_fifo = _create_fifo_handler(address);
-    if (_create_fifos(address) != 0 ) raise_error(ERR_ADDRESS_IN_USE);
-    _open_fifos(listener_fifo, address, 1);
+    socket_connection_info * socket_info = (socket_connection_info *) address; 
+
+    sprintf(aux_buff, "/tmp/%s", socket_info->ip);
+    listener_fifo = _create_fifo_handler(aux_buff);
+    if (_create_fifos(aux_buff) != 0 ) raise_error(ERR_ADDRESS_IN_USE);
+    _open_fifos(listener_fifo, aux_buff, 1);
     _add_fifo(listener_fifo);
 
     while (1){ //read, create, write accept, handler.
@@ -255,6 +260,11 @@ int listen_connections(void * address, main_handler handler){ //char condition y
            flock(listener_fifo->file_desc_w, LOCK_SH);
            new_connection_descriptor = _accept_connection(listener_fifo, aux_buffer);
            flock(listener_fifo->file_desc_w, LOCK_UN);
+
+            if (new_connection_descriptor < 0) {
+                return raise_error(ERR_CON_REJECTED);
+            }
+
            
            handler(listener_fifo->pipe_fd, new_connection_descriptor); 
         }

@@ -3,7 +3,7 @@
 
 typedef struct
 {
-	char * ip;
+	char ip[20];
 	int port;
 }socket_connection_info;
 

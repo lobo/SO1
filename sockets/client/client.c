@@ -12,13 +12,18 @@ int main(int argc , char *argv[])
 
     int sock;
     char buffer[1000];
+
+    char * message;
+    message = "Hola servidor!\n";
     
     sock = connect_to((void*)&server_info);
 
     if (sock < 0){
-        print_error(NULL);
+        print_error();
         return -1;
     }
+
+    send_data(sock, (char*) message);
     
     while(1){
     	

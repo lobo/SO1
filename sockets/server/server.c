@@ -12,11 +12,15 @@ void * connection_handler(void *socket_desc)
     //Get the socket descriptor
     int client_socket_fd = * (int*) socket_desc;
     char * message;
+    char buffer[2000];
      
     //Send some messages to the client
     message = "Hola cliente!\n";
     send_data(client_socket_fd , message);
-    
+
+    if (receive_data(client_socket_fd, buffer)) printf("Recibí: %s\n",buffer);
+
+
 	disconnect(client_socket_fd);  
     free(socket_desc);
 

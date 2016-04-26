@@ -5,10 +5,13 @@
 #include <arpa/inet.h> //inet_addr
 #include <unistd.h>    //write
 #include "comm.h"
-   
+#include "error.h"
+
+//separar todo y dejar un cliente y un servidor solo que impleemnte el .h
 
 int _build_socket(void * address, struct sockaddr_in * s_address){
 
+    //poner todo en un char * y aca adentro separar los dos puntos
     socket_connection_info * socket_info = (socket_connection_info *) address;
 
     if (strcmp(socket_info->ip, "0")){
@@ -32,15 +35,13 @@ int connect_to(void * address){
     struct sockaddr_in sock;
 
     if ( (socket_fd = socket(AF_INET , SOCK_STREAM , 0)) == -1){
-        perror("Error in socket creation");        
-        return -1;
+        return raise_error(ERR_RES_CREATION);
     } 
 
     _build_socket(address, &sock);
 
     if (connect(socket_fd, (struct sockaddr *)&sock, sizeof(sock)) == -1) {
-        perror("Error while trying to connect");
-        return -1;
+        return raise_error(ERR_CON_REFUSED);
     }
 
     return socket_fd;
@@ -69,11 +70,8 @@ int send_data(int connection_descriptor, void * message){
 int receive_data(int connection_descriptor, void * ret_buffer){
 
     int read_bytes;
-    if( (read_bytes = recv(connection_descriptor , ret_buffer , 2000 , 0)) < 0)  //cambiar MN 2000. MSG_WAITALL en flag?
-        {
-            perror("Error while reading");
-            return -1;
-        }
+    read_bytes = recv(connection_descriptor , ret_buffer , 2000 , 0);  //cambiar MN 2000. MSG_WAITALL en flag?
+       
 
     return read_bytes;
 
@@ -87,33 +85,29 @@ int listen_connections(void * address, main_handler handler){
     struct sockaddr_in client;
 
     if ( (listener_socket = socket(AF_INET , SOCK_STREAM , 0)) == -1){
-        perror("Error in socket creation");        
-        return -1;
+        return raise_error(ERR_ADDRESS_IN_USE);        
     } 
 
      _build_socket(address, &sock);
 
 
     if( bind(listener_socket,(struct sockaddr *)&sock , sizeof(sock)) < 0)
-    {
-        perror("Error in socket binding");
-        return -1;
-    }
+       return raise_error(ERR_RES_CREATION);
+    
      
     listen(listener_socket , 3);
 
     int c = sizeof(struct sockaddr_in);
 
-    while( (new_socket_fd = accept(listener_socket, (struct sockaddr *)&client, (socklen_t*)&c)) )
+    while (1)
     {
+        new_socket_fd = accept(listener_socket, (struct sockaddr *)&client, (socklen_t*)&c);
+        
+        if (new_socket_fd < 0) {
+            return raise_error(ERR_CON_REJECTED);
+        }
 
         handler(listener_socket, new_socket_fd);
-    }
-
-     if (new_socket_fd < 0)
-    {
-        perror("Error while trying to accept incoming connection");
-        return -1;
     }
 
     disconnect(listener_socket);
