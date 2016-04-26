@@ -14,6 +14,7 @@
 //IP:PUERTO asi meto en el struct un char * y nada mas
 //Poner errors.h
 //Pasarle al main handler algo para terminar el bucle del servidor (El while 1);
+//Capa para serialize
 
 #define MAX_CONNECTIONS 128
 
