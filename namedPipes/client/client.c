@@ -14,11 +14,11 @@ int main(int argc , char *argv[])
     char buffer[2000];
 
     char * message;
-    //message = "Hola servidor!\n";
+    message = "Hola servidor!\n";
 
     sock = connect_to((void*)server_address);
 
-    //send_data(sock , message);
+    send_data(sock , message);
 
     if (receive_data(sock, buffer)) printf("Recibí: %s\n",buffer);
 

@@ -7,12 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-//Lockear servidor -
-//Archivo de lectura y escritura del servidor OK
-//Dos archivos por conexion. Un creador para cliente y otro para servidor invirtiendo canales de lectura y escritura. OK
 //en sockets meter el accept dentro del while para que no lo puedan tirar
 //Usar la misma estructura para todos, ip y port y que el archivo se llame asi...
 //IP:PUERTO asi meto en el struct un char * y nada mas
+//abstraer lo del sprintf a una funcion
 
 #define MAX_CONNECTIONS 128
 
@@ -65,15 +63,12 @@ void _create_fifos(char * address){
         return;
     }
 
-    printf("Creo fifo en %s\n", aux_buffer);
 
     sprintf(aux_buffer, "%s_%s", address, "r");
      if (mkfifo(aux_buffer, 0666) == -1) {
         perror("Error while creating the fifo");
         return;
     }
-
-    printf("Creo fifo en %s\n", aux_buffer);
 
 
 }
@@ -93,34 +88,29 @@ int _open_fifos(fifo_handler * fh, char * address, char listening){
 
     if (listening == 0){
 
-        sprintf(aux_buffer, "%s_%s", address, "w");
-        printf("Trato de abrir para lectura con listening en %d y el address %s\n",listening, aux_buffer);
-        if ( (fdr = open( aux_buffer, O_RDONLY)) < 0) {    
-            perror("Error while opening fifo R");  
-            return -1;
-        } 
 
         sprintf(aux_buffer, "%s_%s", address, "r");
-        printf("Trato de abrir para escritura con listening en %d y el address %s\n",listening, aux_buffer);
         if ( (fdw = open( aux_buffer, O_WRONLY)) < 0) {    
             perror("Error while opening fifo W");  
             return -1;
         }  
 
+        sprintf(aux_buffer, "%s_%s", address, "w");
+        if ( (fdr = open( aux_buffer, O_RDONLY)) < 0) {    
+            perror("Error while opening fifo R");  
+            return -1;
+        } 
+
 
     }else{
 
         sprintf(aux_buffer, "%s_%s", address, "r");
-        printf("1) Trato de abrir para lectura con listening en %d y el address %s\n",listening, aux_buffer);
-             
         if ( (fdr = open( aux_buffer, O_RDONLY)) < 0) {    
             perror("Error while opening fifo R");  
             return -1;
         }  
 
         sprintf(aux_buffer, "%s_%s", address, "w");
-        printf("1) Trato de abrir para escritura con listening en %d y el address %s\n",listening, aux_buffer);
-         
         if ( (fdw = open( aux_buffer, O_WRONLY)) < 0) {    
             perror("Error while opening fifo W");  
             return -1;
@@ -154,10 +144,17 @@ fifo_handler * _create_fifo_handler(char * address){
 void _delete_fifo(int pipe_fd){ //que le paso? el pipefd, el pipe, el address?
 
     fifo_handler * del_fh = connections_list[_fd_to_index(pipe_fd)];
+    char aux_buffer[20];
 
     close(del_fh->file_desc_r);
     close(del_fh->file_desc_w);
-    //unlink() del pipe_adress con r y w.
+
+    sprintf(aux_buffer, "%s_%s", del_fh->pipe_address, "r"); 
+    unlink(aux_buffer);
+    sprintf(aux_buffer, "%s_%s", del_fh->pipe_address, "w"); 
+    unlink(aux_buffer);
+
+    free(del_fh->pipe_address);
     free(del_fh);
     connections_list[pipe_fd] = NULL;
     connections_number--;
@@ -171,31 +168,29 @@ int connect_to(void * address){ //no tiene timeout...
     int fd;
     int pid = getpid();
 
-    
     sprintf(aux_buffer, "%s_%s", (char*) address, "r"); 
-printf("Trato de abrir para escritura el address %s\n", aux_buffer);
+
     if ( (fd = open( (char *) aux_buffer, O_WRONLY)) < 0) {  
         perror("Error while trying to connect 1");  
         return -1;
     }  
     
-
     sprintf(connection_string, "%d", pid); 
+    
     write(fd, connection_string, strlen((char *) connection_string) + 1);
-
     close(fd);
 
     sprintf(aux_buffer, "%s_%s", (char*) address, "w"); 
+    
     if ( (fd = open(aux_buffer, O_RDONLY)) < 0) {    //si no funciona, poner fopen.
         perror("Error while trying to connect 2");  
         return -1;
     }  
-            
+           
     read(fd , receive_buffer , 20);
 
     sprintf(aux_buffer, "/tmp/fifo_%d", pid); 
     fifo_handler * fh = _create_fifo_handler(aux_buffer); //abrir en lectura y escritura.
-
     _open_fifos(fh, aux_buffer, 0);
 
     close(fd);
@@ -236,7 +231,7 @@ int receive_data(int connection_descriptor, void * ret_buffer){
 }
 
 
-int _accept_connection(char *client_id){
+int _accept_connection(fifo_handler *listener, char *client_id){
 
     char aux_buffer[20];
     fifo_handler * accepted_fifo;
@@ -244,11 +239,9 @@ int _accept_connection(char *client_id){
     sprintf(aux_buffer, "/tmp/fifo_%s", client_id);
     accepted_fifo = _create_fifo_handler(aux_buffer);
     _create_fifos(aux_buffer);
-    puts("Me trabo aca.");
-    //senddata al servidor
-    //recieve data del servidor y aca traba hasta que me da el OK el cliente que ya abrio los archivos. En el connect me tiene que mandar el send desp del open_fifos
+    send_data(listener->pipe_fd, "OK");
     _open_fifos(accepted_fifo, aux_buffer, 1);
-    puts("Me destrabe.");
+    
 
     return accepted_fifo->pipe_fd;
 
@@ -269,8 +262,11 @@ int listen_connections(void * address, main_handler handler){
     while (1){ //read, create, write accept, handler.
 
         if (receive_data(listener_fifo->pipe_fd, aux_buffer) > 0){
-           new_connection_descriptor = _accept_connection(aux_buffer);
-           send_data(listener_fifo->pipe_fd, "OK");
+           
+           flock(listener_fifo->file_desc_w, LOCK_SH);
+           new_connection_descriptor = _accept_connection(listener_fifo, aux_buffer);
+           flock(listener_fifo->file_desc_w, LOCK_UN);
+           
            handler(listener_fifo->pipe_fd, new_connection_descriptor); 
         }
 
