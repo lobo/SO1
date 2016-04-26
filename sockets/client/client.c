@@ -1,4 +1,5 @@
 #include "comm.h"
+#include "error.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -14,6 +15,10 @@ int main(int argc , char *argv[])
     
     sock = connect_to((void*)&server_info);
 
+    if (sock < 0){
+        print_error(NULL);
+        return -1;
+    }
     
     while(1){
     	
