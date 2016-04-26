@@ -6,11 +6,14 @@
 #include "comm.h"
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 
+//Modularizar mas
 //en sockets meter el accept dentro del while para que no lo puedan tirar
 //Usar la misma estructura para todos, ip y port y que el archivo se llame asi...
 //IP:PUERTO asi meto en el struct un char * y nada mas
-//abstraer lo del sprintf a una funcion
+//Poner errors.h
+//Pasarle al main handler algo para terminar el bucle del servidor (El while 1);
 
 #define MAX_CONNECTIONS 128
 
@@ -19,8 +22,8 @@ typedef struct _fifo_connection_data{
     int pipe_fd;
     int file_desc_r;
     int file_desc_w;
-    char * pipe_address;
-    char listening;
+    char * pipe_address; //Para hacer el unlink mas facil
+    char listening; //Para invertir canales de lectura y escritura 
 
 } fifo_handler;
 

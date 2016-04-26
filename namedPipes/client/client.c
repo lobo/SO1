@@ -18,6 +18,11 @@ int main(int argc , char *argv[])
 
     sock = connect_to((void*)server_address);
 
+    if (sock == -1){
+    	printf("Connection refused.\n");
+        return -1;
+    }
+
     send_data(sock , message);
 
     if (receive_data(sock, buffer)) printf("Recibí: %s\n",buffer);
