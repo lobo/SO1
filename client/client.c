@@ -16,10 +16,11 @@ int main(int argc , char *argv[])
     socket_connection_info server_info;
     int connection_fd;
     char read_buffer[2000];
+    int run = 1;
 
     strcpy(server_info.ip, "127.0.0.1");
     server_info.port = 8888;
-
+    
     connection_fd = connect_to((void*)&server_info);
 
     if (connection_fd < 0){
@@ -30,8 +31,16 @@ int main(int argc , char *argv[])
 
     send_data(connection_fd , "Hola servidor!\n");
 
-    if (receive_data(connection_fd, read_buffer)) printf("Recibí: %s\n",read_buffer);
+    while(run){
 
+        if ( receive_data(connection_fd, read_buffer) <= 0){
+            printf( RED "Desconectado.\n" RESET);
+            run = 0;
+            break;
+        }else 
+            printf("Recibí: %s\n",read_buffer);
+
+    }
 
     return 0;
 }

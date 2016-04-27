@@ -14,7 +14,7 @@ int _build_socket(void * address, struct sockaddr_in * s_address){
     //poner todo en un char * y aca adentro separar los dos puntos
     socket_connection_info * socket_info = (socket_connection_info *) address;
 
-    if (strcmp(socket_info->ip, "0")){
+    if (strcmp(socket_info->ip, "127.0.0.1")){
         s_address->sin_addr.s_addr = inet_addr(strdup(socket_info->ip));
     }else{
         s_address->sin_addr.s_addr = INADDR_ANY;
@@ -77,7 +77,7 @@ int receive_data(int connection_descriptor, void * ret_buffer){
 
 }
     
-int listen_connections(void * address, main_handler handler){
+int listen_connections(void * address, main_handler handler, int run_condition){
 
     int listener_socket;
     int new_socket_fd;
@@ -99,7 +99,7 @@ int listen_connections(void * address, main_handler handler){
 
     int c = sizeof(struct sockaddr_in);
 
-    while (1)
+    while (run_condition)
     {
         new_socket_fd = accept(listener_socket, (struct sockaddr *)&client, (socklen_t*)&c);
         

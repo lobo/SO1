@@ -25,5 +25,7 @@ $(EXE): $(OBJECTS)
 clean:
 	rm -rf $(OBJECTS)
 	rm -rf $(EXE)
+	rm -rf /tmp/*_w
+	rm -rf /tmp/*_r
 
 .PHONY: clean

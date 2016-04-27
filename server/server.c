@@ -8,11 +8,12 @@
 #include <fcntl.h>
 #include <string.h>
 #include "comm.h"
+#include "error.h"
 #include <pthread.h>
 
 void * connection_handler(void *socket_desc)
 {
-    //Get the socket descriptor
+
     int connection_fd = * (int*) socket_desc;
     char read_buffer[2000];
      
@@ -35,10 +36,8 @@ void server_main(int listener_descriptor, int new_connection_descriptor){
         * new_con = new_connection_descriptor;
          
         if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_con) < 0)
-        {
-            perror("No se pudo crear un thread.");
-          	return;
-        }
+            return;
+        
 
         printf("Se conectó al servidor un nuevo cliente con el socket_fd: %d\n", new_connection_descriptor);
 
@@ -51,8 +50,9 @@ int main(int argc , char *argv[])
 
     strcpy(server_info.ip, "127.0.0.1");
     server_info.port = 8888;
+    int run = 1;
    
-    listen_connections((void*)&server_info, server_main);
+    listen_connections((void*)&server_info, server_main, run);
 
     return 0;
 

@@ -10,9 +10,6 @@
 #include <sys/file.h>
 
 //Modularizar mas
-//en sockets meter el accept dentro del while para que no lo puedan tirar
-//Usar la misma estructura para todos, ip y port y que el archivo se llame asi...
-//IP:PUERTO asi meto en el struct un char * y nada mas
 //Pasarle al main handler algo para terminar el bucle del servidor (El while 1);
 //Capa para serialize
 
@@ -239,7 +236,7 @@ int _accept_connection(fifo_handler *listener, char *client_id){
 }
 
 // falta usar el handler
-int listen_connections(void * address, main_handler handler){ //char condition y ponerlo en lugar del 1.
+int listen_connections(void * address, main_handler handler, int run_condition){ //char condition y ponerlo en lugar del 1.
     
     fifo_handler * listener_fifo;
     int new_connection_descriptor;
@@ -253,7 +250,7 @@ int listen_connections(void * address, main_handler handler){ //char condition y
     _open_fifos(listener_fifo, aux_buff, 1);
     _add_fifo(listener_fifo);
 
-    while (1){ //read, create, write accept, handler.
+    while (run_condition){ //read, create, write accept, handler.
 
         if (receive_data(listener_fifo->pipe_fd, aux_buffer) > 0){
            
