@@ -1,7 +1,15 @@
+SOURCES_NP = $(wildcard ../libraries/libnamedpipe/objects/*.c)
+SOURCES_S = $(wildcard ../libraries/libsocket/objects/*.c)
+
+ifeq  ($(imp), sockets)
+	SOURCES_C = $(SOURCES_S)
+else
+	SOURCES_C = $(SOURCES_NP)
+endif
+
 EXE = server.bin
 GCC = gcc
-GCCFLAGS = -Wall -I./../includes -lpthread
-SOURCES_C = $(wildcard ../objects/*.c)
+GCCFLAGS = -Wall -I./../libraries/includes -lpthread
 MAIN_C = $(wildcard *.c)
 OBJECTS = $(SOURCES_C:.c=.o)
 
@@ -15,7 +23,7 @@ $(EXE): $(OBJECTS)
 
 
 clean:
-	rm -rf ../objects/*.o *.o *.bin
-	rm -rf server.bin
+	rm -rf $(OBJECTS)
+	rm -rf $(EXE)
 
 .PHONY: clean

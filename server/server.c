@@ -13,21 +13,16 @@
 void * connection_handler(void *socket_desc)
 {
     //Get the socket descriptor
-    int client_socket_fd = * (int*) socket_desc;
-    char * message;
-    char buffer[2000];
+    int connection_fd = * (int*) socket_desc;
+    char read_buffer[2000];
      
-    //Send some messages to the client
-    message = "Hola cliente!\n";
-    send_data(client_socket_fd , message);
+    send_data(connection_fd , "Hola cliente!\n");
 
-    if (receive_data(client_socket_fd, buffer)) printf("Recibí: %s\n",buffer);
+    if (receive_data(connection_fd, read_buffer)) printf("Recibí: %s\n",read_buffer);
     
-    disconnect(client_socket_fd);  
+    disconnect(connection_fd);  
     free(socket_desc);
 
-    printf("Thread terminado. Socket cerrado.\n");
-   
    	return NULL;
      
 }
@@ -35,11 +30,11 @@ void * connection_handler(void *socket_desc)
 void server_main(int listener_descriptor, int new_connection_descriptor){
 
     	pthread_t sniffer_thread;
-        int * new_sock = malloc(sizeof(int));
+        int * new_con = malloc(sizeof(int));
 
-        * new_sock = new_connection_descriptor;
+        * new_con = new_connection_descriptor;
          
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0)
+        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_con) < 0)
         {
             perror("No se pudo crear un thread.");
           	return;
@@ -54,7 +49,8 @@ int main(int argc , char *argv[])
 
     socket_connection_info server_info;
 
-    strcpy(server_info.ip, "fifo_server");
+    strcpy(server_info.ip, "127.0.0.1");
+    server_info.port = 8888;
    
     listen_connections((void*)&server_info, server_main);
 
