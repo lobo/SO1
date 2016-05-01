@@ -34,7 +34,7 @@ const char* db_file = "chatroom.db";
 
 int main(int argc, char const *argv[])
 {
-    sqlite3* db;
+    /*sqlite3* db;
     int rc;
     char sql[256];
     char* errMsg = 0;
@@ -62,12 +62,13 @@ int main(int argc, char const *argv[])
         fprintf(stdout, "Table created successfully\n");
     }
 
-    sqlite3_close(db);
+    sqlite3_close(db);*/
 
-    if (argc == 2) {
+    if (argc == 2) { //hago que registre y se logee con el mismo usuario y contraseña, paja escribir las 2 por separado.
         char* user_pass = malloc(sizeof(char) * strlen(argv[1]));
         strcpy(user_pass, argv[1]);
         register_user(user_pass, user_pass);
+        login(user_pass, user_pass);
     }
     else
         fprintf(stderr, "Just 1 argument expected\n");
@@ -113,6 +114,62 @@ static int register_user(char* username, char* password) {
     sqlite3_close(db);
 
     return rc;
+}
+
+static int login(char* username, char* password) {
+    sqlite3* db;
+    int rc;
+    char sql[128];
+    char* errMsg = 0;
+    Login_info login_info;
+
+    rc = sqlite3_open(db_file, &db);
+
+    if (rc) {
+        fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+        exit(0);
+    } else {
+        fprintf(stdout, "Opened DB successfully\n");
+    }
+
+    sprintf(sql, "SELECT USER, PASSWORD " \
+        "FROM USERNAME " \
+        "WHERE USER='%s' AND PASSWORD='%s';", username, password);
+    printf("Comando SQL: %s\n", sql);
+
+    strcpy(login_info.username, username);
+    strcpy(login_info.password, password);
+    login_info.login_status = LOGIN_FAIL;
+
+    rc = sqlite3_exec(db, sql, login_callback, (void*)(&login_info), &errMsg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Couldn't make your request. Error: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    } else if (login_info.login_status){
+        fprintf(stdout, "Login successful!!!\n");
+    }
+
+    sqlite3_close(db);
+
+    return login_info.login_status;
+}
+
+/*
+* Callback ejecutado al intentar logear. Si retorna distinto a 0 sqlite3_exec devuelve error.
+*/
+static int login_callback(void* user_login_info, int argc, char** argv, char** column_name) {
+    int i;
+    Login_info* login_info = (Login_info*) user_login_info;
+
+    if (!strcmp(login_info->username, argv[0]) || !strcmp(login_info->password, argv[1])) {
+        login_info->login_status = LOGIN_SUCCESS;
+        printf("User login successfull.\n");
+    } else {
+        fprintf(stderr, "User login failed. (Datos no coinciden)\n");
+        return 1;
+    }
+
+    return 0;
 }
 
 /*void db_close() {
