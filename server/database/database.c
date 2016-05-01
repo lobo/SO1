@@ -1,10 +1,6 @@
-#include <sqlite3.h>
-#include <stdio.h>
-#include <string.h>
 #include "database.h"
-#include "./sqlite3/sqlite3.h"
 
-#define DB_PREPARE_V2(db, query, statement) {\
+/*#define DB_PREPARE_V2(db, query, statement) {\
     int rc = sqlite3_prepare_v2(db, query, -1, &statement, NULL);\
     if (rc != SQLITE_OK) {\
         printf("Failed to fetch data: %s\n", sqlite3_errmsg(db));\
@@ -32,15 +28,52 @@
         sqlite3_close(db);\
         exit(1);\
     }\
-}
+}*/
+
+const char* db_file = "chatroom.db";
 
 int main(int argc, char const *argv[])
 {
-    /* code */
+    sqlite3* db;
+    int rc;
+    char sql[256];
+    char* errMsg = 0;
+
+    printf("DB path: %s\n", db_file);
+    rc = sqlite3_open(db_file, &db);
+
+    if (rc) {
+        fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+        exit(0);
+    } else {
+        fprintf(stdout, "Opened DB successfully\n");
+    }
+
+    sprintf(sql, "CREATE TABLE USERNAME(" \
+        "ID INTEGER PRIMARY KEY," \
+        "USER CHAR(30) UNIQUE NOT NULL," \
+        "PASSWORD CHAR (30) NOT NULL);");
+
+    rc = sqlite3_exec(db, sql, callback, 0, &errMsg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Couldn't create your table. Error: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    } else {
+        fprintf(stdout, "Table created successfully\n");
+    }
+
+    sqlite3_close(db);
+
+    if (argc == 2) {
+        char* user_pass = malloc(sizeof(char) * strlen(argv[1]));
+        strcpy(user_pass, argv[1]);
+        register_user(user_pass, user_pass);
+    }
+    else
+        fprintf(stderr, "Just 1 argument expected\n");
+
     return 0;
 }
-
-const char* db_file = "DB/chatroom.db";
 
 static int callback(void* NotUsed, int argc, char** argv, char** column_name) {
     int i;
@@ -51,10 +84,10 @@ static int callback(void* NotUsed, int argc, char** argv, char** column_name) {
     return 0;
 }
 
-static int register_user (char* username, char* password) {
+static int register_user(char* username, char* password) {
     sqlite3* db;
     int rc;
-    char* sql;
+    char sql[128];
     char* errMsg = 0;
 
     rc = sqlite3_open(db_file, &db);
@@ -67,6 +100,7 @@ static int register_user (char* username, char* password) {
     }
 
     sprintf(sql, "INSERT INTO USERNAME(USER, PASSWORD) VALUES ('%s', '%s');", username, password);
+    printf("Comando SQL: %s\n", sql);
 
     rc = sqlite3_exec(db, sql, callback, 0, &errMsg);
     if (rc != SQLITE_OK) {
@@ -81,7 +115,7 @@ static int register_user (char* username, char* password) {
     return rc;
 }
 
-void db_close() {
+/*void db_close() {
     sqlite3_close(db);
 }
 
@@ -129,4 +163,4 @@ static void db_create() {
 
         exit(1);
     }
-}
+}*/
