@@ -9,10 +9,6 @@
 #include <string.h>
 #include <sys/file.h>
 
-//Modularizar mas
-//Pasarle al main handler algo para terminar el bucle del servidor (El while 1);
-//Capa para serialize
-
 #define MAX_CONNECTIONS 128
 
 typedef struct _fifo_connection_data{
@@ -157,7 +153,7 @@ int connect_to(void * address){
     int fd;
     int pid = getpid();
 
-    socket_connection_info * socket_info = (socket_connection_info *) address; 
+    connection_info * socket_info = (connection_info *) address; 
 
     sprintf(aux_buffer, "/tmp/%s_%s", socket_info->ip, "r"); 
 
@@ -241,14 +237,19 @@ int listen_connections(void * address, main_handler handler, int* run_condition)
     fifo_handler * listener_fifo;
     int new_connection_descriptor;
     char aux_buffer[20], aux_buff[40];
+    context_info context;
 
-    socket_connection_info * socket_info = (socket_connection_info *) address; 
+    connection_info * socket_info = (connection_info *) address; 
+
+    context.run = run_condition;
 
     sprintf(aux_buff, "/tmp/%s", socket_info->ip);
     listener_fifo = _create_fifo_handler(aux_buff);
     if (_create_fifos(aux_buff) != 0 ) raise_error(ERR_ADDRESS_IN_USE);
     _open_fifos(listener_fifo, aux_buff, 1);
     _add_fifo(listener_fifo);
+
+    context.listener_descriptor = listener_fifo->pipe_fd;
 
     while (*run_condition){ //read, create, write accept, handler.
 
@@ -262,8 +263,9 @@ int listen_connections(void * address, main_handler handler, int* run_condition)
                 return raise_error(ERR_CON_REJECTED);
             }
 
+            context.new_connection_descriptor = new_connection_descriptor;
            
-           handler(listener_fifo->pipe_fd, new_connection_descriptor); 
+            handler(&context); 
         }
 
     }
