@@ -10,7 +10,7 @@
 
 int _build_socket(void * address, struct sockaddr_in * s_address){
 
-    socket_connection_info * socket_info = (socket_connection_info *) address;
+    connection_info * socket_info = (connection_info *) address;
 
     if (strcmp(socket_info->ip, "127.0.0.1")){
         s_address->sin_addr.s_addr = inet_addr(strdup(socket_info->ip));
@@ -81,6 +81,9 @@ int listen_connections(void * address, main_handler handler, int* run_condition)
     int new_socket_fd;
     struct sockaddr_in sock;
     struct sockaddr_in client;
+    context_info context;
+
+    context.run = run_condition;
 
     if ( (listener_socket = socket(AF_INET , SOCK_STREAM , 0)) == -1){
         return raise_error(ERR_ADDRESS_IN_USE);        
@@ -88,11 +91,12 @@ int listen_connections(void * address, main_handler handler, int* run_condition)
 
      _build_socket(address, &sock);
 
+     context.listener_descriptor = listener_socket;
 
     if( bind(listener_socket,(struct sockaddr *)&sock , sizeof(sock)) < 0)
        return raise_error(ERR_RES_CREATION);
     
-     
+    
     listen(listener_socket , 3);
 
     int c = sizeof(struct sockaddr_in);
@@ -105,7 +109,9 @@ int listen_connections(void * address, main_handler handler, int* run_condition)
             return raise_error(ERR_CON_REJECTED);
         }
 
-        handler(listener_socket, new_socket_fd);
+        context.new_connection_descriptor = new_socket_fd;
+
+        handler(&context);
     }
 
     disconnect(listener_socket);
