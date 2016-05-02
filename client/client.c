@@ -13,7 +13,7 @@
 
 int main(int argc , char *argv[])
 {
-    socket_connection_info server_info;
+    connection_info server_info;
     int connection_fd;
     char read_buffer[2000];
     int run = 1;
@@ -42,7 +42,9 @@ int main(int argc , char *argv[])
 
     }
 
-    disconnect(connection_fd);
+
+    //send_disc_message
+    //disconnect
 
     return 0;
 }
