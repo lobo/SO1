@@ -6,9 +6,17 @@ typedef struct
 {
 	char ip[20];
 	int port;
-}socket_connection_info;
+}connection_info;
 
-typedef void (* main_handler) (int listener_descriptor, int new_connection_descriptor);
+typedef struct
+{
+	int * run;
+	int listener_descriptor;
+	int new_connection_descriptor;
+}context_info;
+
+
+typedef void (* main_handler) (context_info * context);
 
 int connect_to(void * address);
 
