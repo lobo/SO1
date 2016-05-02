@@ -11,15 +11,21 @@
 #include "error.h"
 #include <pthread.h>
 
-void * connection_handler(void *socket_desc) //STRUCT DE CONTEXTO = socket_desc
+#define WELCOME_MSG "Bienvenido al chatroom, "
+
+
+void * connection_handler(void *context) //STRUCT DE CONTEXTO = socket_desc
 {
+
+    context_info * my_context = (context_info*) context;
+    int connection_fd = my_context->new_connection_descriptor;
+
+    printf("Se conectó al servidor un nuevo cliente con el socket_fd: %d\n", connection_fd); //LOG
 
     //Send bienvenida la cliente
     //Leer 
     //Handle tcp packet
 
-
-    int connection_fd = * (int*) socket_desc;
     char read_buffer[2000];
      
     send_data(connection_fd , "Hola cliente!\n");
@@ -27,31 +33,24 @@ void * connection_handler(void *socket_desc) //STRUCT DE CONTEXTO = socket_desc
     if (receive_data(connection_fd, read_buffer)) printf("Recibí: %s\n",read_buffer);
     
     disconnect(connection_fd);  
-    free(socket_desc);
 
    	return NULL;
      
 }
 
-void server_main(int listener_descriptor, int new_connection_descriptor){
+void server_main(context_info * context){
 
     	pthread_t sniffer_thread;
-        int * new_con = malloc(sizeof(int));
-
-        * new_con = new_connection_descriptor;
          
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_con) < 0) //pasar contexto, que contenga new_con y run
+        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) context) < 0) //pasar contexto, que contenga new_con y run
             return;
-        
-
-        printf("Se conectó al servidor un nuevo cliente con el socket_fd: %d\n", new_connection_descriptor); //LOG
 
 }
  
 int main(int argc , char *argv[])
 {
 
-    socket_connection_info server_info;
+    connection_info server_info;
 
     strcpy(server_info.ip, "127.0.0.1");
     server_info.port = 8888;
