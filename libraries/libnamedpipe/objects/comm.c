@@ -236,7 +236,7 @@ int _accept_connection(fifo_handler *listener, char *client_id){
 }
 
 // falta usar el handler
-int listen_connections(void * address, main_handler handler, int run_condition){ //char condition y ponerlo en lugar del 1.
+int listen_connections(void * address, main_handler handler, int* run_condition){ //char condition y ponerlo en lugar del 1.
     
     fifo_handler * listener_fifo;
     int new_connection_descriptor;
@@ -250,7 +250,7 @@ int listen_connections(void * address, main_handler handler, int run_condition){
     _open_fifos(listener_fifo, aux_buff, 1);
     _add_fifo(listener_fifo);
 
-    while (run_condition){ //read, create, write accept, handler.
+    while (*run_condition){ //read, create, write accept, handler.
 
         if (receive_data(listener_fifo->pipe_fd, aux_buffer) > 0){
            

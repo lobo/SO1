@@ -11,8 +11,13 @@
 #include "error.h"
 #include <pthread.h>
 
-void * connection_handler(void *socket_desc)
+void * connection_handler(void *socket_desc) //STRUCT DE CONTEXTO = socket_desc
 {
+
+    //Send bienvenida la cliente
+    //Leer 
+    //Handle tcp packet
+
 
     int connection_fd = * (int*) socket_desc;
     char read_buffer[2000];
@@ -35,11 +40,11 @@ void server_main(int listener_descriptor, int new_connection_descriptor){
 
         * new_con = new_connection_descriptor;
          
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_con) < 0)
+        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_con) < 0) //pasar contexto, que contenga new_con y run
             return;
         
 
-        printf("Se conectó al servidor un nuevo cliente con el socket_fd: %d\n", new_connection_descriptor);
+        printf("Se conectó al servidor un nuevo cliente con el socket_fd: %d\n", new_connection_descriptor); //LOG
 
 }
  
@@ -50,9 +55,9 @@ int main(int argc , char *argv[])
 
     strcpy(server_info.ip, "127.0.0.1");
     server_info.port = 8888;
-    int run = 1;
+    int run = 1; 
    
-    listen_connections((void*)&server_info, server_main, run);
+    listen_connections((void*)&server_info, server_main, &run);
 
     return 0;
 

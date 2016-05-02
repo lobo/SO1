@@ -1,36 +1,7 @@
 #include "database.h"
 
-/*#define DB_PREPARE_V2(db, query, statement) {\
-    int rc = sqlite3_prepare_v2(db, query, -1, &statement, NULL);\
-    if (rc != SQLITE_OK) {\
-        printf("Failed to fetch data: %s\n", sqlite3_errmsg(db));\
-        sqlite3_close(db);\
-        exit(1);\
-    }\
-}
-
-#define DB_FINALIZE(db) {\
-    int rc = sqlite3_finalize(statement);\
-    if (rc != SQLITE_OK) {\
-        printf("Couldn't finalize the db: %s\n", sqlite3_errmsg(db));\
-        sqlite3_close(db);\
-        exit(1);\
-    }\
-}
-
-#define DB_QUERY(db, query) {\
-    int rc;\
-    char * err_msg;\
-    rc = sqlite3_exec(db, query, 0, 0, &err_msg);\
-    if (rc != SQLITE_OK ) {\
-        printf("SQL error: %s\n", err_msg);\
-        sqlite3_free(err_msg);\
-        sqlite3_close(db);\
-        exit(1);\
-    }\
-}*/
-
 const char* db_file = "chatroom.db";
+static int login_callback(void* user_login_info, int argc, char** argv, char** column_name);
 
 int main(int argc, char const *argv[])
 {
@@ -67,8 +38,13 @@ int main(int argc, char const *argv[])
     if (argc == 2) { //hago que registre y se logee con el mismo usuario y contraseña, paja escribir las 2 por separado.
         char* user_pass = malloc(sizeof(char) * strlen(argv[1]));
         strcpy(user_pass, argv[1]);
-        register_user(user_pass, user_pass);
-        login(user_pass, user_pass);
+        //register_user(user_pass, user_pass);
+        if (  login("jereaa","Jereaa") == LOGIN_SUCCESS ){
+            printf("Loguie bien.\n", );
+        else
+            printf("Loguie mal.\n", );
+        }
+       
     }
     else
         fprintf(stderr, "Just 1 argument expected\n");
@@ -142,11 +118,10 @@ static int login(char* username, char* password) {
     login_info.login_status = LOGIN_FAIL;
 
     rc = sqlite3_exec(db, sql, login_callback, (void*)(&login_info), &errMsg);
+    
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Couldn't make your request. Error: %s\n", errMsg);
         sqlite3_free(errMsg);
-    } else if (login_info.login_status){
-        fprintf(stdout, "Login successful!!!\n");
     }
 
     sqlite3_close(db);
@@ -161,63 +136,9 @@ static int login_callback(void* user_login_info, int argc, char** argv, char** c
     int i;
     Login_info* login_info = (Login_info*) user_login_info;
 
-    if (!strcmp(login_info->username, argv[0]) || !strcmp(login_info->password, argv[1])) {
-        login_info->login_status = LOGIN_SUCCESS;
-        printf("User login successfull.\n");
-    } else {
-        fprintf(stderr, "User login failed. (Datos no coinciden)\n");
-        return 1;
-    }
+    printf("Me llega la siguiente data: %s / %s", argv[0], argv[1]);
 
+    login_info->login_status = LOGIN_SUCCESS;
+       
     return 0;
 }
-
-/*void db_close() {
-    sqlite3_close(db);
-}
-
-int db_open(const char* path) {
-    int has_to_populate = 0;
-    int rc;
-
-    if (!file_exist(path)) {
-        has_to_populate = 1;
-    }
-
-    rc = sqlite3_open(path, &db);
-
-    if (rc != SQLITE_OK) {
-        printf("Can't open database: %s\n", sqlite3_errmsg(db));
-        return 1;
-    } else {
-
-        if (has_to_populate) {
-            printf("%s\n", "Database does not exist. Creating...");
-            db_create();
-        }
-
-        printf("%s\n", "Opened database successfully");
-    }
-
-    return 0;
-}
-
-static void db_create() {
-    char * sql;
-    char * err_msg;
-    int rc;
-
-    // sql = poner tablas aca;
-
-    rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
-
-    if (rc != SQLITE_OK ) {
-
-        printf("SQL error: %s\n", err_msg);
-
-        sqlite3_free(err_msg);
-        sqlite3_close(db);
-
-        exit(1);
-    }
-}*/

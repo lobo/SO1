@@ -42,5 +42,7 @@ int main(int argc , char *argv[])
 
     }
 
+    disconnect(connection_fd);
+
     return 0;
 }
