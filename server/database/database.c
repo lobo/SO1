@@ -1,6 +1,7 @@
 #include "database.h"
 
 const char* db_file = "chatroom.db";
+static int callback(void* NotUsed, int argc, char** argv, char** column_name);
 static int login_callback(void* user_login_info, int argc, char** argv, char** column_name);
 
 int main(int argc, char const *argv[])
@@ -23,7 +24,10 @@ int main(int argc, char const *argv[])
     sprintf(sql, "CREATE TABLE USERNAME(" \
         "ID INTEGER PRIMARY KEY," \
         "USER CHAR(30) UNIQUE NOT NULL," \
-        "PASSWORD CHAR (30) NOT NULL);");
+        "PASSWORD CHAR (30) NOT NULL," \
+        "PRIVILEGES INT DEFAULT 0," \
+        "DATE_CREATED DATETIME NOT NULL," \
+        "LAST_LOGIN DATETIME);");
 
     rc = sqlite3_exec(db, sql, callback, 0, &errMsg);
     if (rc != SQLITE_OK) {
@@ -39,12 +43,10 @@ int main(int argc, char const *argv[])
         char* user_pass = malloc(sizeof(char) * strlen(argv[1]));
         strcpy(user_pass, argv[1]);
         //register_user(user_pass, user_pass);
-        if (  login("jereaa","Jereaa") == LOGIN_SUCCESS ){
-            printf("Loguie bien.\n", );
-        else
-            printf("Loguie mal.\n", );
-        }
-       
+        if (login(user_pass, user_pass) == LOGIN_SUCCESS)
+            printf("Loguie bien.\n");
+        else 
+            printf("Loguie mal.\n");
     }
     else
         fprintf(stderr, "Just 1 argument expected\n");
@@ -52,6 +54,9 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
+/*
+* Callback generico para la ejecucion de comandos SQL
+*/
 static int callback(void* NotUsed, int argc, char** argv, char** column_name) {
     int i;
     for (i = 0 ; i < argc ; i++) {
@@ -61,6 +66,9 @@ static int callback(void* NotUsed, int argc, char** argv, char** column_name) {
     return 0;
 }
 
+/*
+* Registro un nuevo usuario en mi base de datos si no esta ya registrado
+*/
 static int register_user(char* username, char* password) {
     sqlite3* db;
     int rc;
@@ -76,10 +84,10 @@ static int register_user(char* username, char* password) {
         fprintf(stdout, "Opened DB successfully\n");
     }
 
-    sprintf(sql, "INSERT INTO USERNAME(USER, PASSWORD) VALUES ('%s', '%s');", username, password);
+    sprintf(sql, "INSERT INTO USERNAME(USER, PASSWORD, PRIVILEGES, DATE_CREATED) VALUES ('%s', '%s', 0, datetime('now', 'localtime'));", username, password);
     printf("Comando SQL: %s\n", sql);
 
-    rc = sqlite3_exec(db, sql, callback, 0, &errMsg);
+    rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Couldn't register your username. Error: %s\n", errMsg);
         sqlite3_free(errMsg);
@@ -92,6 +100,9 @@ static int register_user(char* username, char* password) {
     return rc;
 }
 
+/*
+* Funcion de login
+*/
 static int login(char* username, char* password) {
     sqlite3* db;
     int rc;
@@ -124,6 +135,15 @@ static int login(char* username, char* password) {
         sqlite3_free(errMsg);
     }
 
+    sprintf(sql, "UPDATE USERNAME SET LAST_LOGIN = datetime('now', 'localtime') WHERE USER = '%s';", login_info.username);
+    printf("Comando SQL: %s\n", sql);
+    rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Couldn't make your request. Error: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    }
+
     sqlite3_close(db);
 
     return login_info.login_status;
@@ -136,7 +156,7 @@ static int login_callback(void* user_login_info, int argc, char** argv, char** c
     int i;
     Login_info* login_info = (Login_info*) user_login_info;
 
-    printf("Me llega la siguiente data: %s / %s", argv[0], argv[1]);
+    printf("Me llega la siguiente data: %s / %s\n", argv[0], argv[1]);
 
     login_info->login_status = LOGIN_SUCCESS;
        
