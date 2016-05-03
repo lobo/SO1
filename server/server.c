@@ -28,9 +28,9 @@ void * connection_handler(void *context) //STRUCT DE CONTEXTO = socket_desc
 
     char read_buffer[2000];
      
-    send_data(connection_fd , "Hola cliente!\n");
+    send_data(connection_fd , "Hola cliente!\n", 15);
 
-    if (receive_data(connection_fd, read_buffer)) printf("Recibí: %s\n",read_buffer);
+    if (receive_data(connection_fd, read_buffer, 16)) printf("Recibí: %s\n",read_buffer);
     
     disconnect(connection_fd);  
 
@@ -56,7 +56,7 @@ int main(int argc , char *argv[])
     server_info.port = 8888;
     int run = 1; 
    
-    listen_connections((void*)&server_info, server_main, &run);
+    listen_connections((void*)&server_info, server_main, &run); //manejo de errores
 
     return 0;
 

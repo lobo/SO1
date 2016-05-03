@@ -22,9 +22,9 @@ int connect_to(void * address);
 
 int disconnect(int connection_descriptor);
 
-int send_data(int connection_descriptor, void * message);
+int send_data(int connection_descriptor, void * message, int length);
 
-int receive_data(int connection_descriptor, void *ret_buffer);
+int receive_data(int connection_descriptor, void *ret_buffer, int length);
 
 int listen_connections(void * address, main_handler handler, int* run_condition);
 

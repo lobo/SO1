@@ -159,21 +159,19 @@ int connect_to(void * address){
 
     if ( (fd = open( (char *) aux_buffer, O_WRONLY)) < 0) 
         return raise_error(ERR_CON_REFUSED);
-     
-    
-    sprintf(connection_string, "%d", pid); 
-    
-    write(fd, connection_string, strlen((char *) connection_string) + 1);
+
+    sprintf(connection_string, "%d", pid);
+
+    write(fd, connection_string, strlen((char *) connection_string)+1);
     close(fd);
 
     sprintf(aux_buffer, "/tmp/%s_%s", socket_info->ip, "w"); 
     
     if ( (fd = open(aux_buffer, O_RDONLY)) < 0)
         return raise_error(ERR_CON_TIMEOUT); //Timeout?
-      
-           
+        
     read(fd , receive_buffer , 20); //SI NO ES UN OK, ES UN REJECTED
-
+    
     sprintf(aux_buffer, "/tmp/fifo_%d", pid); 
     fifo_handler * fh = _create_fifo_handler(aux_buffer);
     _open_fifos(fh, aux_buffer, 0);
@@ -192,24 +190,21 @@ int disconnect(int connection_descriptor){
 
 }
 
-int send_data(int connection_descriptor, void * message){ //deberia ir el real connection descriptor, el del open. Una funcion que te haga open, otra close.
+int send_data(int connection_descriptor, void * message, int bytes_to_write){ //deberia ir el real connection descriptor, el del open. Una funcion que te haga open, otra close.
 
     int written_bytes;
-    int bytes_to_write = strlen((char *) message) + 1;
    
-
-    while ( (written_bytes = write(connections_list[connection_descriptor]->file_desc_w, message, bytes_to_write)) < bytes_to_write){}
+    while ( (written_bytes = write(connections_list[connection_descriptor]->file_desc_w, message, bytes_to_write)) < bytes_to_write) {}
 
 
     return written_bytes; // will be 0 if no bytes are written
 }
 
-int receive_data(int connection_descriptor, void * ret_buffer){
+int receive_data(int connection_descriptor, void * ret_buffer, int bytes_to_read){
 
     int read_bytes;
 
-    read_bytes = read(connections_list[connection_descriptor]->file_desc_r , ret_buffer , 2000); //cambiar MN 2000. MSG_WAITALL en flag?
-        
+    while ( (read_bytes = read(connections_list[connection_descriptor]->file_desc_r , ret_buffer , bytes_to_read)) < bytes_to_read) {} //cambiar MN 2000. MSG_WAITALL en flag?
 
     return read_bytes;
 }
@@ -223,7 +218,7 @@ int _accept_connection(fifo_handler *listener, char *client_id){
     sprintf(aux_buffer, "/tmp/fifo_%s", client_id);
     accepted_fifo = _create_fifo_handler(aux_buffer);
     _create_fifos(aux_buffer);
-    send_data(listener->pipe_fd, "OK");
+    write(connections_list[listener->pipe_fd]->file_desc_w, "OK", 3);
     _open_fifos(accepted_fifo, aux_buffer, 1);
     
 
@@ -253,7 +248,7 @@ int listen_connections(void * address, main_handler handler, int* run_condition)
 
     while (*run_condition){ //read, create, write accept, handler.
 
-        if (receive_data(listener_fifo->pipe_fd, aux_buffer) > 0){
+        if (read(connections_list[listener_fifo->pipe_fd]->file_desc_r, aux_buffer, 20) > 0){
            
            flock(listener_fifo->file_desc_w, LOCK_SH);
            new_connection_descriptor = _accept_connection(listener_fifo, aux_buffer);

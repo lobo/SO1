@@ -29,16 +29,16 @@ int main(int argc , char *argv[])
     }else
         printf( GREEN "Conectado.\n" RESET);
 
-    send_data(connection_fd , "Hola servidor!\n");
+    send_data(connection_fd , "Hola servidor!\n", 16);
 
     while(run){
 
-        if ( receive_data(connection_fd, read_buffer) <= 0){
-            printf( RED "Desconectado.\n" RESET);
-            run = 0;
-            break;
-        }else 
-            printf("Recibí: %s\n",read_buffer);
+        receive_data(connection_fd, read_buffer, 15);
+     
+        printf("Recibí: %s\n",read_buffer); //parche
+        printf( RED "Desconectado.\n" RESET);
+        run = 0;
+        break;
 
     }
 

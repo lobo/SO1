@@ -55,21 +55,20 @@ int disconnect(int connection_descriptor){
 }
 
 
-int send_data(int connection_descriptor, void * message){
+int send_data(int connection_descriptor, void * message, int bytes_to_write){
 
-    int bytes_to_write = strlen((char *) message) + 1;
     int written_bytes;
 
-    while ( (written_bytes = send(connection_descriptor, message, bytes_to_write, 0)) < bytes_to_write){}
+    while ( (written_bytes = send(connection_descriptor, message, bytes_to_write, 0)) < bytes_to_write) {}
 
     return written_bytes;
 }
 
-int receive_data(int connection_descriptor, void * ret_buffer){
+int receive_data(int connection_descriptor, void * ret_buffer, int bytes_to_read){
 
     int read_bytes;
-    read_bytes = recv(connection_descriptor , ret_buffer , 2000 , 0);  //cambiar MN 2000. MSG_WAITALL en flag?
-       
+    
+    while ( (read_bytes = recv(connection_descriptor , ret_buffer , bytes_to_read , 0)) < bytes_to_read) {}  
 
     return read_bytes;
 
