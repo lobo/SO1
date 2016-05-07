@@ -9,6 +9,7 @@
 #include <string.h>
 #include "comm.h"
 #include "error.h"
+#include "serialize.h"
 #include <pthread.h>
 
 #define WELCOME_MSG "Bienvenido al chatroom, "
@@ -26,11 +27,13 @@ void * connection_handler(void *context) //STRUCT DE CONTEXTO = socket_desc
     //Leer 
     //Handle tcp packet
 
-    char read_buffer[2000];
+    //char read_buffer[2000];
      
-    send_data(connection_fd , "Hola cliente!\n", 15);
+    //send_data(connection_fd , "Hola cliente!\n", 15);
 
-    if (receive_data(connection_fd, read_buffer, 16)) printf("Recibí: %s\n",read_buffer);
+    //if (receive_data(connection_fd, read_buffer, 16)) printf("Recibí: %s\n",read_buffer);
+
+    write_string(connection_fd, "Hola que tal tucomo estas123\n");
     
     disconnect(connection_fd);  
 

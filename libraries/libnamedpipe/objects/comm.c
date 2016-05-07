@@ -250,9 +250,7 @@ int listen_connections(void * address, main_handler handler, int* run_condition)
 
         if (read(connections_list[listener_fifo->pipe_fd]->file_desc_r, aux_buffer, 20) > 0){
            
-           flock(listener_fifo->file_desc_w, LOCK_SH);
            new_connection_descriptor = _accept_connection(listener_fifo, aux_buffer);
-           flock(listener_fifo->file_desc_w, LOCK_UN);
 
             if (new_connection_descriptor < 0) {
                 return raise_error(ERR_CON_REJECTED);

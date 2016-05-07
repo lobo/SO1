@@ -1,5 +1,6 @@
 #include "comm.h"
 #include "error.h"
+#include "serialize.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,11 +30,11 @@ int main(int argc , char *argv[])
     }else
         printf( GREEN "Conectado.\n" RESET);
 
-    send_data(connection_fd , "Hola servidor!\n", 16);
-
+    //send_data(connection_fd , "Hola servidor!\n", 16);
+        
     while(run){
 
-        receive_data(connection_fd, read_buffer, 15);
+        read_string(connection_fd, read_buffer);
      
         printf("Recibí: %s\n",read_buffer); //parche
         printf( RED "Desconectado.\n" RESET);
