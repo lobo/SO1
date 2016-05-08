@@ -167,6 +167,19 @@ static int delete_username(char * username) {
     return 0;
 }
 
+// Busca chatlogs entre tales fechas
+// TODO: Corregir el formato de las dates
+static int get_chatlog(Date from, Date to) {
+
+    char query[128];
+
+    sprintf(query, "SELECT * FROM chatlog where date_time BETWEEN %s AND %s;", from, to);
+
+    execute_query(db, query);
+
+    return 0;
+}
+
 // Inserto un nuevo chatlog
 static int insert_chatlog(char * username, char * message) {
 
