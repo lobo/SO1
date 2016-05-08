@@ -7,8 +7,13 @@
 //#include <sqlite3.h>
 #include "sqlite3/sqlite3.h"
 
-#define LOGIN_SUCCESS  0
-#define LOGIN_FAIL  !LOGIN_SUCCESS
+#define LOGIN_STATUS_SUCCESS  0
+#define LOGIN_STATUS_FAIL 1
+#define LOGIN_STATUS_BANNED 2
+
+#define USER_NORMAL 0
+#define USER_MOD 1
+#define USER_ADMIN 2
 
 typedef struct {
     char username[30];
