@@ -1,8 +1,11 @@
 #include "database.h"
+#include <time.h>
 
 const char* db_file = "chatroom.db";
 static int callback(void* NotUsed, int argc, char** argv, char** column_name);
 static int login_callback(void* user_login_info, int argc, char** argv, char** column_name);
+
+static sqlite3 * db;
 
 int main(int argc, char const *argv[])
 {
@@ -66,11 +69,62 @@ static int callback(void* NotUsed, int argc, char** argv, char** column_name) {
     return 0;
 }
 
-/*
-* Registro un nuevo usuario en mi base de datos si no esta ya registrado
-*/
-static int register_user(char* username, char* password) {
-    sqlite3* db;
+
+// =========================
+// Operations on the tables:
+// =========================
+
+static void execute_query(sqlite3 * db, char * query){
+    
+    int rc;
+    char * err_msg;
+    rc = sqlite3_exec(db, query, 0, 0, &err_msg);
+
+    if (rc != SQLITE_OK ) {
+        printf("SQL error: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        sqlite3_close(db);
+        exit(1);
+    }
+
+}
+
+// creation of both tables: users and chatlogs
+static void db_create() {
+
+    char * sql;
+    char * err_msg;
+    int rc;
+
+    sql = "CREATE TABLE user("
+          "username         CHAR(20) NOT NULL UNIQUE,"
+          "password         CHAR(20) NOT NULL",
+          "privileges       INTEGER NOT NULL DEFAULT 0",
+          "date_created     DATE NOT NULL",
+          "last_login       DATE NOT NULL",
+          "banned_flag      INTEGER NOT NULL);"
+
+          "CREATE TABLE chatlog("
+          "date_time    DATE NOT NULL",
+          "username     CHAR(20) NOT NULL",
+          "message      CHAR(255) NOT NULL);";
+
+    rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
+
+    if (rc != SQLITE_OK ) {
+
+        printf("SQL error: %s\n", err_msg);
+
+        sqlite3_free(err_msg);
+        sqlite3_close(db);
+
+        exit(1);
+    }
+
+}
+
+// Registro un nuevo usuario en mi base de datos si no esta ya registrado
+static int insert_user(char* username, char* password) {
     int rc;
     char sql[128];
     char* errMsg = 0;
@@ -98,6 +152,39 @@ static int register_user(char* username, char* password) {
     sqlite3_close(db);
 
     return rc;
+}
+
+
+// Elimino un usuario por su username
+static int delete_username(char * username) {
+
+    char query[128];
+
+    sprintf(query, "DELETE FROM user where username = %s;", username);
+
+    execute_query(db, query);
+
+    return 0;
+}
+
+// Inserto un nuevo chatlog
+static int insert_chatlog(char * username, char * message) {
+
+    char query[128];
+
+    // variables for time
+    time_t rawtime;
+    struct tm *info;
+    char date_time[80];
+    time(&rawtime);
+    info = localtime(&rawtime);
+    strftime(date_time,80,"%x - %I:%M%p", info); // La fecha tiene la forma: 08/23/12 - 12:40AM (quizas hay una manera mejor)
+
+    sprintf(query, "INSERT INTO chatlog (date_time, username, message) VALUES (%s,%s,%s);", date_time, username, message);
+
+    execute_query(db, query);
+
+    return sqlite3_last_insert_rowid(db);
 }
 
 /*
