@@ -12,11 +12,13 @@
 #define GREEN "\x1b[32m"
 #define RESET "\033[0m"
 
+
+//select en cliente.
+
 int main(int argc , char *argv[])
 {
     connection_info server_info;
     int connection_fd;
-    char read_buffer[2000];
     int run = 1;
 
     strcpy(server_info.ip, "127.0.0.1");
@@ -31,15 +33,24 @@ int main(int argc , char *argv[])
         printf( GREEN "Conectado.\n" RESET);
 
     //send_data(connection_fd , "Hola servidor!\n", 16);
+
+    t_buffer * buffer = create_buffer();
+    int x,y;
+    char z[20];
         
     while(run){
-
-        read_string(connection_fd, read_buffer);
+            
+            printf("Lei %d bytes\n", load_buffer(connection_fd, buffer));
+  
+            read_int(buffer, &x);
+            read_int(buffer, &y);
+            read_string(buffer, z);
+            printf("Recibí: %d, %d y %s\n",x, y, z); //parche
+            printf( RED "Desconectado.\n" RESET);
+            run = 0;
+            delete_buffer(buffer);
+            break;
      
-        printf("Recibí: %s\n",read_buffer); //parche
-        printf( RED "Desconectado.\n" RESET);
-        run = 0;
-        break;
 
     }
 

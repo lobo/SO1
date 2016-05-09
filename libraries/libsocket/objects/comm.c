@@ -7,7 +7,6 @@
 #include "comm.h"
 #include "error.h"
 
-
 int _build_socket(void * address, struct sockaddr_in * s_address){
 
     connection_info * socket_info = (connection_info *) address;
@@ -64,11 +63,14 @@ int send_data(int connection_descriptor, void * message, int bytes_to_write){
     return written_bytes;
 }
 
-int receive_data(int connection_descriptor, void * ret_buffer, int bytes_to_read){
+int receive_data(int connection_descriptor, void * ret_buffer){
 
-    int read_bytes;
+    int read_bytes = recv(connection_descriptor , ret_buffer , 512 , 0); //chunksize 512
+    char * chars = (char *) ret_buffer;
     
-    while ( (read_bytes = recv(connection_descriptor , ret_buffer , bytes_to_read , 0)) < bytes_to_read) {}  
+    while ( chars[read_bytes - 1] != END_MESSAGE_SENTINEL) {
+        read_bytes += recv(connection_descriptor , ret_buffer , 512 , 0);
+    }  
 
     return read_bytes;
 
