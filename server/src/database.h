@@ -21,12 +21,13 @@ typedef struct {
     int login_status;
 } Login_info;
 
-static int register_user(char* username, char* password, int privileges);
-static int login(char* username, char* password, Login_info* login_info);
-static int insert_chatlog(char * username, char * message);
-static int get_chatlog(char* from, char* to, char** chatlog);
-static int delete_username(char * username);
-static void db_create();
+int register_user(char* username, char* password);
+int update_privileges(char* username, char privilege);
+int login(char* username, char* password, Login_info* login_info);
+int insert_chatlog(char * username, char * message);
+int get_chatlog(char* from, char* to, char** chatlog);
+int delete_username(char * username);
+void db_create();
 
 
 #endif

@@ -1,10 +1,10 @@
 #include "database.h"
 //AGREGAR SERIALIZE CHAR PARA PACKET ID
 const char* db_file = "chatroom.db";
-static int callback(void* NotUsed, int argc, char** argv, char** column_name);
-static int login_callback(void* user_login_info, int argc, char** argv, char** column_name);
-static int get_chatlog_callback(void* chatlog_ptr, int argc, char** argv, char** column_name);
-
+int callback(void* NotUsed, int argc, char** argv, char** column_name);
+int login_callback(void* user_login_info, int argc, char** argv, char** column_name);
+int get_chatlog_callback(void* chatlog_ptr, int argc, char** argv, char** column_name);
+/*
 int main(int argc, char const *argv[])
 {
     Login_info log_info;
@@ -24,11 +24,11 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
-
+*/
 /*
 * Callback generico para la ejecucion de comandos SQL
 */
-static int callback(void* NotUsed, int argc, char** argv, char** column_name) {
+int callback(void* NotUsed, int argc, char** argv, char** column_name) {
     int i;
     for (i = 0 ; i < argc ; i++) {
         printf("%s = %s\n", column_name[i], argv[i] ? argv[i] : "NULL");
@@ -38,7 +38,7 @@ static int callback(void* NotUsed, int argc, char** argv, char** column_name) {
 }
 
 // creation of both tables: users and chatlogs
-static void db_create() {
+void db_create() {
     sqlite3* db;
     int rc;
     char sql[576];
@@ -94,16 +94,11 @@ static void db_create() {
 * Registro un nuevo usuario indicando privilegios en mi base de datos si no esta ya registrado
 * Los privilegios estan definidos en database.h
 */
-static int register_user(char* username, char* password, int privileges) {
+int register_user(char* username, char* password) {
     sqlite3* db;
     int rc;
     char sql[160];
     char* errMsg = 0;
-
-    if (privileges != USER_NORMAL && privileges != USER_MOD && privileges != USER_ADMIN) {
-        fprintf(stderr, "User privileges not correct. Please check for correct privileges to register user\n");
-        exit(1);
-    }
 
     rc = sqlite3_open(db_file, &db);
 
@@ -112,7 +107,7 @@ static int register_user(char* username, char* password, int privileges) {
         return rc;
     }
 
-    sprintf(sql, "INSERT INTO USERS(USERNAME, PASSWORD, PRIVILEGES, DATE_CREATED) VALUES ('%s', '%s', %d, datetime('now', 'localtime'));", username, password, privileges);
+    sprintf(sql, "INSERT INTO USERS(USERNAME, PASSWORD, DATE_CREATED) VALUES ('%s', '%s', datetime('now', 'localtime'));", username, password);
 
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
@@ -127,9 +122,40 @@ static int register_user(char* username, char* password, int privileges) {
     return rc;
 }
 
+/*
+* Modifico los permisos de cierto usuario
+*/
+int update_privileges(char* username, char privilege) {
+    sqlite3* db;
+    int rc;
+    char sql[160];
+    char* errMsg = 0;
+
+    rc = sqlite3_open(db_file, &db);
+
+    if (rc) {
+        fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+        return rc;
+    }
+
+    sprintf(sql, "UPDATE USERS SET PRIVILEGES = %d WHERE USERNAME = '%s';", (int)privilege, username);
+
+    rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Couldn't modify de privileges. Error: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    } else {
+        fprintf(stdout, "Username %s changed privileges successfully\n", username);
+    }
+
+    sqlite3_close(db);
+
+    return rc;
+}
+
 
 // Elimino un usuario por su username... utilidad???
-static int delete_username(char * username) {
+int delete_username(char * username) {
     sqlite3* db;
     int rc;
     char sql[64];
@@ -165,7 +191,7 @@ static int delete_username(char * username) {
 * Las fechas tienen el formato YYYY-MM-DD HH:MM:SS
 * Si el formato es incorrecto SQLite me tira error y lo handleo
 */
-static int get_chatlog(char* from, char* to, char** chatlog) {
+int get_chatlog(char* from, char* to, char** chatlog) {
     sqlite3* db;
     int rc;
     char sql[256];
@@ -200,7 +226,7 @@ static int get_chatlog(char* from, char* to, char** chatlog) {
 /*
 * Voy poniendo el resultado en el puntero a char que me pasaron y lo voy reallocando con cada tupla que devuelve.
 */
-static int get_chatlog_callback(void* chatlog_ptr, int argc, char** argv, char** column_name) {
+int get_chatlog_callback(void* chatlog_ptr, int argc, char** argv, char** column_name) {
     char** chatlog = (char**) chatlog_ptr;
     int current_size = strlen(*chatlog);
 
@@ -219,7 +245,7 @@ static int get_chatlog_callback(void* chatlog_ptr, int argc, char** argv, char**
 /*
 * Inserto nuevo mensaje en el chatlog. Esto puede ser tanto un mensaje de usuario como de sistema.
 */
-static int insert_chatlog(char * username, char * message) {
+int insert_chatlog(char * username, char * message) {
 
     sqlite3* db;
     int rc;
@@ -243,7 +269,7 @@ static int insert_chatlog(char * username, char * message) {
         fprintf(stderr, "Couldn't log the current chatlog. Error: %s\n", errMsg);
         sqlite3_free(errMsg);
     } else {
-        fprintf(stdout, "Log logged successfully.\n", username);
+        fprintf(stdout, "%s logged successfully.\n", username);
     }
 
     sqlite3_close(db);
@@ -254,7 +280,7 @@ static int insert_chatlog(char * username, char * message) {
 /*
 * Funcion de login
 */
-static int login(char* username, char* password, Login_info* login_info) {
+int login(char* username, char* password, Login_info* login_info) {
     sqlite3* db;
     int rc;
     char sql[160];
@@ -300,8 +326,7 @@ static int login(char* username, char* password, Login_info* login_info) {
 /*
 * Callback ejecutado al intentar logear. Si retorna distinto a 0 sqlite3_exec devuelve error.
 */
-static int login_callback(void* user_login_info, int argc, char** argv, char** column_name) {
-    int i;
+int login_callback(void* user_login_info, int argc, char** argv, char** column_name) {
     Login_info* login_info = (Login_info*) user_login_info;
 
     if (atoi(argv[3]) == 1) {

@@ -1,7 +1,4 @@
 #include "tcp_server.h"
-#include "user.h"
-#include <string.h>
-#include <stdio.h>
 
 #define MAX_USERS 100
 #define WELCOME_MSG "Servidor>> Bienvenido al chatroom."
@@ -41,6 +38,9 @@ void handle_tcp_packets(int user_index){
         	handle_talk(user_index);
         	break;
 
+        case REGISTER_USER:
+        	handle_register(user_index);
+        	break;
     }
 
 
@@ -50,21 +50,23 @@ void handle_tcp_packets(int user_index){
 
 void handle_login(int user_index){
 
-	char username [20], password [20];
-	int color, privileges;
+	char username [30], password [30];
+	int color;
+	Login_info log_info;
 
 	read_string(user_list[user_index]->recv_buffer, username); 
 	read_string(user_list[user_index]->recv_buffer, password); 
 	read_int(user_list[user_index]->recv_buffer, &color);
 
-	//check user y pw
-
-	//check privileges
-	privileges = 0;
+	if(login(username, password, &log_info) != LOGIN_STATUS_SUCCESS) {
+		//TODO desconectar usuario
+		printf("Fallo login.\n");
+		return;
+	}
 
 	user_list[user_index]->name = strdup(username); //ponerlo con un (MOD)o(ADMIN) segun priv.
 	user_list[user_index]->color = color;
-	user_list[user_index]->privileges = privileges;
+	user_list[user_index]->privileges = log_info.privileges;
 
 
 	write_talk(user_index, WELCOME_MSG, SERVER_COLOR);
@@ -73,7 +75,24 @@ void handle_login(int user_index){
 
 }
 
-void handle_register();
+void handle_register(int user_index) {
+	char username [30], password [30];
+
+	read_string(user_list[user_index]->recv_buffer, username); 
+	read_string(user_list[user_index]->recv_buffer, password);
+
+	if(register_user(username, password) != SQLITE_OK){
+		//TODO desconectar usuario
+		printf("Fallo register.\n");
+		return;
+	}
+
+	user_list[user_index]->name = strdup(username); //ponerlo con un (MOD)o(ADMIN) segun priv.
+	user_list[user_index]->privileges = USER_NORMAL;
+
+
+	write_talk(user_index, WELCOME_MSG, SERVER_COLOR); //TODO ENCAPSULAR ESTO EN UNA FUNCION DE LOGIN QUE LLAME AL HANDLE LOGIN.
+}
 
 void handle_delete();
 

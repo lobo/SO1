@@ -47,7 +47,6 @@ void handle_tcp_packets(){
         case TALK:
             handle_talk();
             break;
-
     }
 
 

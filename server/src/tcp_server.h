@@ -3,6 +3,10 @@
 
 #include "serialize.h"
 #include "comm.h"
+#include "user.h"
+#include <string.h>
+#include <stdio.h>
+#include "database.h"
 
 
 void handle_tcp_packets(int user_index);

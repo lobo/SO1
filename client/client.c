@@ -51,9 +51,9 @@ int main(int argc , char *argv[])
 
     init_client("127.0.0.1", 8888);
 
-    write_login("martin", "martin123", 5); //debe devolver valor asi hago si es -1, return;
-
-    write_talk("hola que tal");
+    //write_login("admin", "admin", 5); //debe devolver valor asi hago si es -1, return;
+    write_register("jorgito", "jorgito");
+    //write_talk("hola que tal");
 
     maxfd = client_connection_id;
     FD_ZERO(&fds);
