@@ -47,26 +47,26 @@ int main(int argc , char *argv[])
 
     fd_set fds;
     int maxfd, r_bytes;
-    char stdin_buffer[20];
+    //char stdin_buffer[20];
 
     init_client("127.0.0.1", 8888);
 
     //write_login("admin", "admin", 5); //debe devolver valor asi hago si es -1, return;
-    write_register("jorgito", "jorgito");
+    write_register("pedrito", "pedrito123");
     //write_talk("hola que tal");
 
     maxfd = client_connection_id;
-    FD_ZERO(&fds);
-    FD_SET(client_connection_id, &fds); 
-    FD_SET(0, &fds); 
-
-
+     
     while (1){
+
+        FD_ZERO(&fds);
+        FD_SET(client_connection_id, &fds); 
+        FD_SET(0, &fds);
 
         select(maxfd+1, &fds, NULL, NULL, NULL); 
 
         if (FD_ISSET(0, &fds)){
-            fgets(stdin_buffer, 20, stdin);
+            //fgets(stdin_buffer, 20, stdin); ACA VA EL PARSER
         }
         
         if (FD_ISSET(client_connection_id, &fds)){

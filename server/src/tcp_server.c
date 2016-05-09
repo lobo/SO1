@@ -24,9 +24,9 @@ extern int connected_users;
 
 void handle_tcp_packets(int user_index){
 
-    int p_id;
+    BYTE p_id;
 
-    read_int(user_list[user_index]->recv_buffer, &p_id);
+    read_byte(user_list[user_index]->recv_buffer, &p_id);
 
     switch (p_id){
 
@@ -113,7 +113,7 @@ void handle_talk(int user_index){ //user index es el ejecutante. target a quien 
 
 void write_talk(int target_index, char * message, int color){
 
-	write_int(user_list[target_index]->send_buffer, TALK);
+	write_byte(user_list[target_index]->send_buffer, TALK);
 	write_string(user_list[target_index]->send_buffer, message);
 	write_int(user_list[target_index]->send_buffer, color); //server color
 

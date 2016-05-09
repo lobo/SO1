@@ -33,6 +33,19 @@ void delete_buffer(t_buffer * buffer){
 
 }
 
+void write_byte(t_buffer * buffer , BYTE number){
+
+	memcpy(buffer->data + buffer->pos, &number, sizeof(int8_t));
+	buffer->pos += sizeof(int8_t);
+	
+}
+
+void read_byte(t_buffer * buffer , BYTE * number){
+
+	memcpy(number, buffer->data + buffer->pos, sizeof(int8_t));
+	buffer->pos+= sizeof(int8_t);
+
+}
 
 void write_int(t_buffer * buffer , int number){
 

@@ -38,9 +38,9 @@ char *c_colors[] = {RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE};
 
 void handle_tcp_packets(){
 
-    int p_id;
+    BYTE p_id;
 
-    read_int(client_recv_buffer, &p_id);
+    read_byte(client_recv_buffer, &p_id);
 
     switch (p_id){
 
@@ -67,7 +67,7 @@ void write_login(char * username, char * password, char color){
         return;
     }
 
-    write_int(client_send_buffer, LOGIN);
+    write_byte(client_send_buffer, LOGIN);
     write_string(client_send_buffer, username);
     write_string(client_send_buffer, password);
     write_int(client_send_buffer, color);
@@ -91,7 +91,7 @@ void write_register(char * username, char * password){
     }
 
 
-    write_int(client_send_buffer, REGISTER_USER);
+    write_byte(client_send_buffer, REGISTER_USER);
     write_string(client_send_buffer, username);
     write_string(client_send_buffer, password);
 
@@ -113,7 +113,7 @@ void write_delete(char * username, char * password){
         return;
     }
 
-    write_int(client_send_buffer, DELETE_USER);
+    write_byte(client_send_buffer, DELETE_USER);
     write_string(client_send_buffer, username);
     write_string(client_send_buffer, password);
 
@@ -129,7 +129,7 @@ void write_talk(char * mensaje){
 		return;
 	}
 
-	write_int(client_send_buffer, TALK);
+	write_byte(client_send_buffer, TALK);
 	write_string(client_send_buffer, mensaje);
 
 	flush_buffer(client_connection_id, client_send_buffer);
@@ -157,7 +157,7 @@ void write_change_color(int color){
 		return;
 	}
 
-	write_int(client_send_buffer, CHANGE_COLOR);
+	write_byte(client_send_buffer, CHANGE_COLOR);
 	write_int(client_send_buffer, color);
 
 	flush_buffer(client_connection_id, client_send_buffer);
@@ -178,7 +178,7 @@ void write_change_pw(char * username, char * old_password, char * new_password){
         return;
     }
 
-	write_int(client_send_buffer, CHANGE_PW);
+	write_byte(client_send_buffer, CHANGE_PW);
 	write_string(client_send_buffer, username);
 	write_string(client_send_buffer, old_password);
 	write_string(client_send_buffer, new_password);
@@ -196,7 +196,7 @@ void write_kick(char * username, char * reason){
 		return;
 	}
 
-	write_int(client_send_buffer, KICK);
+	write_byte(client_send_buffer, KICK);
 	write_string(client_send_buffer, username);
 	write_string(client_send_buffer, reason);
 
@@ -211,7 +211,7 @@ void write_ban(char * username, char * reason){
 		return;
 	}
 
-	write_int(client_send_buffer, BAN);
+	write_byte(client_send_buffer, BAN);
 	write_string(client_send_buffer, username);
 	write_string(client_send_buffer, reason);
 
@@ -226,7 +226,7 @@ void write_disconnect(){
 		return;
 	}
 
-	write_int(client_send_buffer, DISCONNECT);
+	write_byte(client_send_buffer, DISCONNECT);
 
 	flush_buffer(client_connection_id, client_send_buffer);
 
@@ -250,7 +250,7 @@ void write_check_logs(){
 		return;
 	}
 
-	write_int(client_send_buffer, CHECK_LOGS);
+	write_byte(client_send_buffer, CHECK_LOGS);
 
 	flush_buffer(client_connection_id, client_send_buffer);
 

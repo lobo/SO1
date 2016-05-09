@@ -25,6 +25,8 @@ int read_string(int connection_descriptor, char * read_buffer);
 t_buffer * create_buffer();
 void delete_buffer(t_buffer * buffer);
 
+void write_byte(t_buffer * buffer , BYTE number);
+void read_byte(t_buffer * buffer , BYTE * number);
 void write_int(t_buffer * buffer , int number);
 void write_string(t_buffer * buffer, char * string);
 void read_int(t_buffer * buffer, int * number);
