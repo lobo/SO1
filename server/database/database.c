@@ -1,49 +1,20 @@
 #include "database.h"
-
+//AGREGAR SERIALIZE CHAR PARA PACKET ID
 const char* db_file = "chatroom.db";
 static int callback(void* NotUsed, int argc, char** argv, char** column_name);
 static int login_callback(void* user_login_info, int argc, char** argv, char** column_name);
+static int get_chatlog_callback(void* chatlog_ptr, int argc, char** argv, char** column_name);
 
 int main(int argc, char const *argv[])
 {
-    /*sqlite3* db;
-    int rc;
-    char sql[256];
-    char* errMsg = 0;
-
-    printf("DB path: %s\n", db_file);
-    rc = sqlite3_open(db_file, &db);
-
-    if (rc) {
-        fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
-        exit(0);
-    } else {
-        fprintf(stdout, "Opened DB successfully\n");
-    }
-
-    sprintf(sql, "CREATE TABLE USERNAME(" \
-        "ID INTEGER PRIMARY KEY," \
-        "USER CHAR(30) UNIQUE NOT NULL," \
-        "PASSWORD CHAR (30) NOT NULL," \
-        "PRIVILEGES INT DEFAULT 0," \
-        "DATE_CREATED DATETIME NOT NULL," \
-        "LAST_LOGIN DATETIME);");
-
-    rc = sqlite3_exec(db, sql, callback, 0, &errMsg);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Couldn't create your table. Error: %s\n", errMsg);
-        sqlite3_free(errMsg);
-    } else {
-        fprintf(stdout, "Table created successfully\n");
-    }
-
-    sqlite3_close(db);*/
+    Login_info log_info;
+    //db_create();
 
     if (argc == 2) { //hago que registre y se logee con el mismo usuario y contraseña, paja escribir las 2 por separado.
         char* user_pass = malloc(sizeof(char) * strlen(argv[1]));
         strcpy(user_pass, argv[1]);
-        //register_user(user_pass, user_pass);
-        if (login(user_pass, user_pass) == LOGIN_SUCCESS)
+        //register_user(user_pass, user_pass, USER_NORMAL);
+        if (login(user_pass, user_pass, &log_info) == LOGIN_STATUS_SUCCESS)
             printf("Loguie bien.\n");
         else
             printf("Loguie mal.\n");
@@ -69,38 +40,54 @@ static int callback(void* NotUsed, int argc, char** argv, char** column_name) {
 // creation of both tables: users and chatlogs
 static void db_create() {
     sqlite3* db;
-    char * sql;
-    char * err_msg;
     int rc;
+    char sql[576];
+    char* errMsg = 0;
 
-    sql = "CREATE TABLE USERS(" \
-          "ID INTEGER PRIMARY KEY" \
-          "username         CHAR(20) NOT NULL UNIQUE," \
-          "password         CHAR(20) NOT NULL," \
-          "privileges       INT DEFAULT 0," \
-          "date_created     DATETIME NOT NULL datetime('now', 'localtime')," \
-          "last_login       DATETIME," \
-          "banned_flag      INTEGER DEFAULT 0);" \
+    printf("DB path: %s\n", db_file);
+    rc = sqlite3_open(db_file, &db);
 
-          "CREATE TABLE CHATLOG(" \
-          "ID INTEGER PRIMARY KEY," \
-          "DATE_TIME    DATETIME NOT NULL DEFAULT datetime('now', 'localtime'),", \
-          "USER_ID     INTEGER NOT NULL," \
-          "MESSAGE      TEXT NOT NULL)," \
-          "FOREIGN KEY (USER_ID) REFERENCES USERS(ID);";
-
-    rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
-
-    if (rc != SQLITE_OK ) {
-
-        printf("SQL error: %s\n", err_msg);
-
-        sqlite3_free(err_msg);
-        sqlite3_close(db);
-
-        exit(1);
+    if (rc) {
+        fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+        exit(0);
+    } else {
+        fprintf(stdout, "Opened DB successfully\n");
+    }
+    printf("Creo tabla de users\n");
+    sprintf(sql, "CREATE TABLE USERS(" \
+      "ID INTEGER PRIMARY KEY," \
+      "USERNAME CHAR(30) NOT NULL UNIQUE," \
+      "PASSWORD CHAR(30) NOT NULL," \
+      "PRIVILEGES INT DEFAULT 0," \
+      "DATE_CREATED DATETIME NOT NULL," \
+      "LAST_LOGIN DATETIME," \
+      "BANNED_FLAG INTEGER DEFAULT 0);"
+      "CREATE TABLE CHATLOG(" \
+      "ID INTEGER PRIMARY KEY," \
+      "DATE_TIME DATETIME NOT NULL," \
+      "USER_ID INTEGER NOT NULL," \
+      "MESSAGE TEXT NOT NULL," \
+      "FOREIGN KEY (USER_ID) REFERENCES USERS(ID));");
+    printf("Comando SQL: %s\n", sql);
+    rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Couldn't create your table. Error: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    } else {
+        fprintf(stdout, "Tables created successfully\n");
     }
 
+    sprintf(sql, "INSERT INTO USERS(USERNAME, PASSWORD, PRIVILEGES, DATE_CREATED) VALUES ('admin', 'admin', %d, datetime('now', 'localtime'));", USER_ADMIN);
+    printf("Comando SQL: %s\n", sql);
+
+    rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Couldn't register your username. Error: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    } else {
+        fprintf(stdout, "Username admin registered successfully\n");
+    }
+    sqlite3_close(db);
 }
 
 /*
@@ -122,13 +109,10 @@ static int register_user(char* username, char* password, int privileges) {
 
     if (rc) {
         fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
-        exit(1);
-    } else {
-        fprintf(stdout, "Opened DB successfully\n");
+        return rc;
     }
 
-    sprintf(sql, "INSERT INTO USERS(USER, PASSWORD, PRIVILEGES, DATE_CREATED) VALUES ('%s', '%s', %d, datetime('now', 'localtime'));", username, password, privileges);
-    printf("Comando SQL: %s\n", sql);
+    sprintf(sql, "INSERT INTO USERS(USERNAME, PASSWORD, PRIVILEGES, DATE_CREATED) VALUES ('%s', '%s', %d, datetime('now', 'localtime'));", username, password, privileges);
 
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
@@ -251,7 +235,7 @@ static int insert_chatlog(char * username, char * message) {
         fprintf(stdout, "Opened DB successfully\n");
     }
 
-    sprintf(sql, "INSERT INTO CHATLOG(USER_ID, MESSAGE) VALUES ((SELECT ID FROM USERS WHERE USERNAME = '%s'), %s);", username, message);
+    sprintf(sql, "INSERT INTO CHATLOG(USER_ID, DATE_TIME, MESSAGE) VALUES ((SELECT ID FROM USERS WHERE USERNAME = '%s'), datetime('now', 'localtime'), %s);", username, message);
     printf("Comando SQL: %s\n", sql);
 
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
@@ -270,33 +254,29 @@ static int insert_chatlog(char * username, char * message) {
 /*
 * Funcion de login
 */
-static int login(char* username, char* password) {
+static int login(char* username, char* password, Login_info* login_info) {
     sqlite3* db;
     int rc;
     char sql[160];
     char* errMsg = 0;
-    Login_info login_info;
 
     rc = sqlite3_open(db_file, &db);
 
     if (rc) {
         fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
-        exit(0);
-    } else {
-        fprintf(stdout, "Opened DB successfully\n");
+        return rc;
     }
 
     //Search for the user and pw in the DB
-    sprintf(sql, "SELECT USER, PASSWORD, PRIVILEGES, BANNED_FLAG " \
+    sprintf(sql, "SELECT USERNAME, PASSWORD, PRIVILEGES, BANNED_FLAG " \
         "FROM USERS " \
-        "WHERE USER='%s' AND PASSWORD='%s';", username, password);
-    printf("Comando SQL: %s\n", sql);
+        "WHERE USERNAME='%s' AND PASSWORD='%s';", username, password);
 
-    strcpy(login_info.username, username);
-    strcpy(login_info.password, password);
-    login_info.login_status = LOGIN_FAIL;
+    strcpy(login_info->username, username);
+    strcpy(login_info->password, password);
+    login_info->login_status = LOGIN_STATUS_FAIL;
 
-    rc = sqlite3_exec(db, sql, login_callback, (void*)(&login_info), &errMsg);
+    rc = sqlite3_exec(db, sql, login_callback, (void*)login_info, &errMsg);
 
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Couldn't make your request. Error: %s\n", errMsg);
@@ -304,8 +284,7 @@ static int login(char* username, char* password) {
     }
 
     //Update the last time the user logged in in the DB
-    sprintf(sql, "UPDATE USERS SET LAST_LOGIN = datetime('now', 'localtime') WHERE USER = '%s';", login_info.username);
-    printf("Comando SQL: %s\n", sql);
+    sprintf(sql, "UPDATE USERS SET LAST_LOGIN = datetime('now', 'localtime') WHERE USERNAME = '%s';", login_info->username);
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
 
     if (rc != SQLITE_OK) {
@@ -315,7 +294,7 @@ static int login(char* username, char* password) {
 
     sqlite3_close(db);
 
-    return login_info.login_status;
+    return login_info->login_status;
 }
 
 /*
@@ -325,13 +304,11 @@ static int login_callback(void* user_login_info, int argc, char** argv, char** c
     int i;
     Login_info* login_info = (Login_info*) user_login_info;
 
-    printf("Me llega la siguiente data: %s / %s / %s / %s\n", argv[0], argv[1], argv[2], argv[3]);
-
     if (atoi(argv[3]) == 1) {
         login_info -> login_status = LOGIN_STATUS_BANNED;
         return LOGIN_STATUS_BANNED;
     }
-
+    login_info->privileges = *(argv[2]);
     login_info->login_status = LOGIN_STATUS_SUCCESS;
 
     return 0;
