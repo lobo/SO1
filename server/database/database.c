@@ -1,5 +1,4 @@
 #include "database.h"
-#include <time.h>
 
 const char* db_file = "chatroom.db";
 static int callback(void* NotUsed, int argc, char** argv, char** column_name);
@@ -67,26 +66,6 @@ static int callback(void* NotUsed, int argc, char** argv, char** column_name) {
     return 0;
 }
 
-
-// =========================
-// Operations on the tables:
-// =========================
-
-static void execute_query(sqlite3 * db, char * query){
-    sqlite3* db;
-    int rc;
-    char * err_msg;
-    rc = sqlite3_exec(db, query, 0, 0, &err_msg);
-
-    if (rc != SQLITE_OK ) {
-        printf("SQL error: %s\n", err_msg);
-        sqlite3_free(err_msg);
-        sqlite3_close(db);
-        exit(1);
-    }
-
-}
-
 // creation of both tables: users and chatlogs
 static void db_create() {
     sqlite3* db;
@@ -131,7 +110,7 @@ static void db_create() {
 static int register_user(char* username, char* password, int privileges) {
     sqlite3* db;
     int rc;
-    char sql[128];
+    char sql[160];
     char* errMsg = 0;
 
     if (privileges != USER_NORMAL && privileges != USER_MOD && privileges != USER_ADMIN) {
@@ -165,11 +144,11 @@ static int register_user(char* username, char* password, int privileges) {
 }
 
 
-// Elimino un usuario por su username
+// Elimino un usuario por su username... utilidad???
 static int delete_username(char * username) {
     sqlite3* db;
     int rc;
-    char sql[128];
+    char sql[64];
     char* errMsg = 0;
 
     rc = sqlite3_open(db_file, &db);
@@ -181,7 +160,7 @@ static int delete_username(char * username) {
         fprintf(stdout, "Opened DB successfully\n");
     }
 
-    sprintf(sql, "DELETE FROM USERS WHERE USERNAME = '%s'", username);
+    sprintf(sql, "DELETE FROM USERS WHERE USERNAME = '%s';", username);
     printf("Comando SQL: %s\n", sql);
 
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
@@ -196,26 +175,71 @@ static int delete_username(char * username) {
 
     return rc;
 }
+
 /*
-// Busca chatlogs entre tales fechas
-// TODO: Corregir el formato de las dates
-static int get_chatlog(Date from, Date to) {
+* Busca chatlogs entre tales fechas
+* Las fechas tienen el formato YYYY-MM-DD HH:MM:SS
+* Si el formato es incorrecto SQLite me tira error y lo handleo
+*/
+static int get_chatlog(char* from, char* to, char** chatlog) {
+    sqlite3* db;
+    int rc;
+    char sql[256];
+    char* errMsg = 0;
 
-    char query[128];
+    rc = sqlite3_open(db_file, &db);
 
-    sprintf(query, "SELECT * FROM chatlog where date_time BETWEEN %s AND %s;", from, to);
+    if (rc) {
+        fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+        exit(0);
+    } else {
+        fprintf(stdout, "Opened DB successfully\n");
+    }
 
-    execute_query(db, query);
+    sprintf(sql, "SELECT DATE_TIME, USERNAME, MESSAGE " \
+        "FROM USERS, CHATLOG " \
+        "WHERE USERS.ID = CHATLOG.USER_ID AND DATE_TIME >= datetime('%s') AND DATE_TIME <= datetime('%s');", from, to);
+    printf("Comando SQL: %s\n", sql);
+
+    rc = sqlite3_exec(db, sql, get_chatlog_callback, (void*) chatlog, &errMsg);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Couldn't get the chatlog. Error: %s\n", errMsg);
+        sqlite3_free(errMsg);
+    }
+
+    sqlite3_close(db);
+
+    return rc;
+}
+
+/*
+* Voy poniendo el resultado en el puntero a char que me pasaron y lo voy reallocando con cada tupla que devuelve.
+*/
+static int get_chatlog_callback(void* chatlog_ptr, int argc, char** argv, char** column_name) {
+    char** chatlog = (char**) chatlog_ptr;
+    int current_size = strlen(*chatlog);
+
+    *chatlog = realloc(*chatlog, (current_size + strlen(argv[2]) + 1) * sizeof(char));
+    if (*chatlog == 0) {
+        fprintf(stderr, "No pudo alocarse la memoria necesaria para el chatlog. Cancelando...\n");
+        return 1;
+    }
+
+    strcat(*chatlog, argv[2]);
+    strcat(*chatlog, "\n");
 
     return 0;
-}*/
+}
 
-// Inserto un nuevo chatlog
+/*
+* Inserto nuevo mensaje en el chatlog. Esto puede ser tanto un mensaje de usuario como de sistema.
+*/
 static int insert_chatlog(char * username, char * message) {
 
     sqlite3* db;
     int rc;
-    char sql[128];
+    char sql[160];
     char* errMsg = 0;
 
     rc = sqlite3_open(db_file, &db);
@@ -249,7 +273,7 @@ static int insert_chatlog(char * username, char * message) {
 static int login(char* username, char* password) {
     sqlite3* db;
     int rc;
-    char sql[128];
+    char sql[160];
     char* errMsg = 0;
     Login_info login_info;
 

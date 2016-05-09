@@ -16,13 +16,16 @@
 #define USER_ADMIN 2
 
 typedef struct {
-    char username[30];
-    char password[30];
+    char username[20];
+    char password[20];
     int login_status;
 } Login_info;
 
 static int register_user(char* username, char* password);
 static int login(char* username, char* password);
+static int insert_chatlog(char * username, char * message);
+static int get_chatlog(char* from, char* to);
+static int delete_username(char * username);
 
 
 #endif
