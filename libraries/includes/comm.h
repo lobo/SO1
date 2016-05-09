@@ -15,6 +15,7 @@ typedef struct
 	int new_connection_descriptor;
 }context_info;
 
+#define END_MESSAGE_SENTINEL '#'
 
 typedef void (* main_handler) (context_info * context);
 
@@ -24,7 +25,7 @@ int disconnect(int connection_descriptor);
 
 int send_data(int connection_descriptor, void * message, int length);
 
-int receive_data(int connection_descriptor, void *ret_buffer, int length);
+int receive_data(int connection_descriptor, void * ret_buffer);
 
 int listen_connections(void * address, main_handler handler, int* run_condition);
 

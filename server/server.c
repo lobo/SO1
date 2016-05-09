@@ -1,18 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <stddef.h>
-#include <fcntl.h>
 #include <string.h>
+#include <pthread.h>
 #include "comm.h"
 #include "error.h"
 #include "serialize.h"
-#include <pthread.h>
 
-#define WELCOME_MSG "Bienvenido al chatroom, "
+#define WELCOME_MSG "Servidor>> Bienvenido al chatroom\n"
+
+//struct para usuarios
+
 
 
 void * connection_handler(void *context) //STRUCT DE CONTEXTO = socket_desc
@@ -28,12 +25,17 @@ void * connection_handler(void *context) //STRUCT DE CONTEXTO = socket_desc
     //Handle tcp packet
 
     //char read_buffer[2000];
+    t_buffer * buffer = create_buffer();
+    write_int(buffer, 5);
+    write_int(buffer, 10);
+    write_string(buffer, "La concha de tu madre");
      
-    //send_data(connection_fd , "Hola cliente!\n", 15);
+    flush_buffer(connection_fd, buffer);
+
+    delete_buffer(buffer);
 
     //if (receive_data(connection_fd, read_buffer, 16)) printf("Recibí: %s\n",read_buffer);
 
-    write_string(connection_fd, "Hola que tal tucomo estas123\n");
     
     disconnect(connection_fd);  
 
