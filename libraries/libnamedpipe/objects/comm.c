@@ -200,11 +200,16 @@ int send_data(int connection_descriptor, void * message, int bytes_to_write){ //
     return written_bytes; // will be 0 if no bytes are written
 }
 
-int receive_data(int connection_descriptor, void * ret_buffer, int bytes_to_read){
+int receive_data(int connection_descriptor, void * ret_buffer){
 
-    int read_bytes;
 
-    while ( (read_bytes = read(connections_list[connection_descriptor]->file_desc_r , ret_buffer , bytes_to_read)) < bytes_to_read) {} //cambiar MN 2000. MSG_WAITALL en flag?
+    int read_bytes = read(connections_list[connection_descriptor]->file_desc_r , ret_buffer , 512);
+    char * chars = (char *) ret_buffer;
+
+    while (chars[read_bytes - 1] != END_MESSAGE_SENTINEL) {
+
+        read_bytes += read(connections_list[connection_descriptor]->file_desc_r , ret_buffer , 512);
+    }
 
     return read_bytes;
 }
