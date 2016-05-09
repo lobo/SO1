@@ -1,7 +1,11 @@
 #ifndef TCPCLIENT_H
 #define TCPCLIENT_H
 
-void init_client();
+#include "serialize.h"
+#include "comm.h"
+
+
+void handle_tcp_packets();
 
 void write_login(char * username, char * password, char color);
 
@@ -12,7 +16,7 @@ void write_delete(char * username, char * password);
 void write_talk(char * mensaje);
 void handle_talk();
 
-void write_change_color(char color);
+void write_change_color(int color);
 
 void write_change_pw(char * username, char * old_password, char * new_password);
 

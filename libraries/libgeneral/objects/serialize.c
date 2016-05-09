@@ -6,40 +6,6 @@
 
 #define BUFFER_SIZE 512
 
-/*
-int write_int(int connection_descriptor, int message){
-
-	return send_data(connection_descriptor, (void*) &message, sizeof(int32_t));
-
-}
-
-int write_string(int connection_descriptor, char * message){
-
-	int len = strlen(message) + 1;
-
-	write_int(connection_descriptor, len);
-
-	return send_data(connection_descriptor, message, len);
-
-}
-
-int read_int(int connection_descriptor){
-
-	int message;
-	receive_data(connection_descriptor, &message, sizeof(int32_t));
-
-	return message;
-}
-
-int read_string(int connection_descriptor, char * read_buffer){
-
-	int len = read_int(connection_descriptor);
-
-	return receive_data(connection_descriptor, read_buffer, len);
-
-}
-
-*/
 
 t_buffer * create_buffer(){
 
@@ -56,6 +22,7 @@ t_buffer * create_buffer(){
 		return NULL;
 	}
 
+	bzero(ret_buffer->data, BUFFER_SIZE);
 	return ret_buffer;
 
 }
@@ -115,14 +82,18 @@ int flush_buffer(int connection_descriptor, t_buffer * buffer){
 
 void clean_buffer(t_buffer * buffer){
 
+
 	bzero(buffer->data, buffer->pos);
 	buffer->pos = 0;
+	
 
 }
 
 int load_buffer(int connection_descriptor, t_buffer * buffer){
 
+	
 	return receive_data(connection_descriptor, buffer->data);
+
 
 }
 

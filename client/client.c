@@ -1,60 +1,92 @@
 #include "comm.h"
 #include "error.h"
 #include "serialize.h"
+#include "tcp_client.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <sys/select.h>
 
-#define RED "\x1b[31m"
-#define GREEN "\x1b[32m"
-#define RESET "\033[0m"
 
+int client_connection_id;
+int run;
+t_buffer * client_send_buffer;
+t_buffer * client_recv_buffer;
+connection_info server_info;
 
 //select en cliente.
 
+void init_client(char * ip, int port){
+
+    strcpy(server_info.ip, ip);
+    server_info.port = port;
+
+    client_connection_id = -1;
+
+    client_send_buffer = create_buffer();
+    client_recv_buffer = create_buffer();
+
+    run = 1;
+
+}
+
+void deinit_client(){
+
+    delete_buffer(client_send_buffer);
+    delete_buffer(client_recv_buffer);
+
+    run = 0;
+    
+}
+
+
 int main(int argc , char *argv[])
 {
-    connection_info server_info;
-    int connection_fd;
-    int run = 1;
 
-    strcpy(server_info.ip, "127.0.0.1");
-    server_info.port = 8888;
-    
-    connection_fd = connect_to((void*)&server_info);
+    fd_set fds;
+    int maxfd, r_bytes;
+    char stdin_buffer[20];
 
-    if (connection_fd < 0){
-        print_error();
-        return -1;
-    }else
-        printf( GREEN "Conectado.\n" RESET);
+    init_client("127.0.0.1", 8888);
 
-    //send_data(connection_fd , "Hola servidor!\n", 16);
+    write_login("martin", "martin123", 5); //debe devolver valor asi hago si es -1, return;
 
-    t_buffer * buffer = create_buffer();
-    int x,y;
-    char z[20];
+    write_talk("hola que tal");
+
+    maxfd = client_connection_id;
+    FD_ZERO(&fds);
+    FD_SET(client_connection_id, &fds); 
+    FD_SET(0, &fds); 
+
+
+    while (1){
+
+        select(maxfd+1, &fds, NULL, NULL, NULL); 
+
+        if (FD_ISSET(0, &fds)){
+            fgets(stdin_buffer, 20, stdin);
+        }
         
-    while(run){
-            
-            printf("Lei %d bytes\n", load_buffer(connection_fd, buffer));
-  
-            read_int(buffer, &x);
-            read_int(buffer, &y);
-            read_string(buffer, z);
-            printf("Recibí: %d, %d y %s\n",x, y, z); //parche
-            printf( RED "Desconectado.\n" RESET);
-            run = 0;
-            delete_buffer(buffer);
-            break;
-     
+        if (FD_ISSET(client_connection_id, &fds)){
+
+            r_bytes = load_buffer(client_connection_id, client_recv_buffer);
+
+    
+            while (client_recv_buffer->pos + 1 < r_bytes){
+                handle_tcp_packets();
+                client_recv_buffer->pos+=1;
+            }
+
+            clean_buffer(client_recv_buffer);
+        }
+        
 
     }
 
-
+    deinit_client();
+     
     //send_disc_message
     //disconnect
 

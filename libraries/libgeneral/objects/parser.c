@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+/*
 #define FAILED_LOGIN_MSG "Command syntax error. Correct format is: /login username password color"
 #define FAILED_CREATE_MSG "Command syntax error. Correct format is: /create username password"
 #define FAILED_DELETE_MSG "Command syntax error. Correct format is: /delete username password"
@@ -148,3 +149,4 @@ main()
 
 	return 0;
 }
+*/

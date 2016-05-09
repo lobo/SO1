@@ -10,6 +10,7 @@
 #include <sys/file.h>
 
 #define MAX_CONNECTIONS 128
+#define MIN_CONN_FD 4
 
 typedef struct _fifo_connection_data{
 
@@ -36,7 +37,7 @@ int _fd_to_index(int fd){
 
 int _get_free_index(){
 
-    for(int i = 0; i <= connections_number; i++)
+    for(int i = MIN_CONN_FD; i <= connections_number + MIN_CONN_FD; i++)
         if (connections_list[i] == NULL) return i;
 
     return -1;
@@ -103,6 +104,8 @@ int _open_fifos(fifo_handler * fh, char * address, char listening){
     fh->file_desc_w = fdw;
     fh->file_desc_r = fdr;
 
+    fh->pipe_fd = fdr; //para que el fd sirva en el select. get free index no se usa y el define min sockets tampoco.
+
     return 0;
 
 }
@@ -120,7 +123,6 @@ fifo_handler * _create_fifo_handler(char * address){
     	return NULL;
     }
 
-    _add_fifo(ret_fh);
 
     return ret_fh;
 
@@ -169,13 +171,15 @@ int connect_to(void * address){
     
     if ( (fd = open(aux_buffer, O_RDONLY)) < 0)
         return raise_error(ERR_CON_TIMEOUT); //Timeout?
-        
+    
+
     read(fd , receive_buffer , 20); //SI NO ES UN OK, ES UN REJECTED
     
     sprintf(aux_buffer, "/tmp/fifo_%d", pid); 
     fifo_handler * fh = _create_fifo_handler(aux_buffer);
     _open_fifos(fh, aux_buffer, 0);
-
+    _add_fifo(fh);
+   
     close(fd);
 
     return fh->pipe_fd;
@@ -225,6 +229,7 @@ int _accept_connection(fifo_handler *listener, char *client_id){
     _create_fifos(aux_buffer);
     write(connections_list[listener->pipe_fd]->file_desc_w, "OK", 3);
     _open_fifos(accepted_fifo, aux_buffer, 1);
+    _add_fifo(accepted_fifo);
     
 
     return accepted_fifo->pipe_fd;

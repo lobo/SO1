@@ -5,11 +5,29 @@
 #include "comm.h"
 #include "error.h"
 #include "serialize.h"
+#include "user.h"
+#include "tcp_server.h"
 
-#define WELCOME_MSG "Servidor>> Bienvenido al chatroom\n"
-
+#define MAX_USERS 100
 //struct para usuarios
 
+t_user * user_list[MAX_USERS];
+int connected_users;
+
+//generate index
+//name to index
+
+int get_free_index(){
+
+    for (int i = 0; i < MAX_USERS; i++){
+
+        if (user_list[i] == NULL)
+            return i;
+    }
+
+
+    return -1;
+}
 
 
 void * connection_handler(void *context) //STRUCT DE CONTEXTO = socket_desc
@@ -17,27 +35,28 @@ void * connection_handler(void *context) //STRUCT DE CONTEXTO = socket_desc
 
     context_info * my_context = (context_info*) context;
     int connection_fd = my_context->new_connection_descriptor;
+    int user_index = get_free_index();
+    int r_bytes;
 
-    printf("Se conectó al servidor un nuevo cliente con el socket_fd: %d\n", connection_fd); //LOG
+    t_user * new_user = create_user(connection_fd);
+    add_user(user_list, new_user, user_index);
 
-    //Send bienvenida la cliente
-    //Leer 
-    //Handle tcp packet
+    while (1){
 
-    //char read_buffer[2000];
-    t_buffer * buffer = create_buffer();
-    write_int(buffer, 5);
-    write_int(buffer, 10);
-    write_string(buffer, "La concha de tu madre");
-     
-    flush_buffer(connection_fd, buffer);
+        if (user_list[user_index] == NULL) //Parche para comandos que no requieren conexion.
+            break;
 
-    delete_buffer(buffer);
+        r_bytes = load_buffer(connection_fd, user_list[user_index]->recv_buffer);
+        
+        while (user_list[user_index]->recv_buffer->pos + 1 < r_bytes){ //se recibieron dos paquetes juntos.
+            handle_tcp_packets(user_index);
+            user_list[user_index]->recv_buffer->pos+=1;
+        }
+        
+        clean_buffer(user_list[user_index]->recv_buffer);
 
-    //if (receive_data(connection_fd, read_buffer, 16)) printf("Recibí: %s\n",read_buffer);
+    }
 
-    
-    disconnect(connection_fd);  
 
    	return NULL;
      
@@ -46,9 +65,11 @@ void * connection_handler(void *context) //STRUCT DE CONTEXTO = socket_desc
 void server_main(context_info * context){
 
     	pthread_t sniffer_thread;
+        //crear listas de usuario y eso.
          
         if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) context) < 0) //pasar contexto, que contenga new_con y run
             return;
+
 
 }
  
@@ -60,6 +81,8 @@ int main(int argc , char *argv[])
     strcpy(server_info.ip, "127.0.0.1");
     server_info.port = 8888;
     int run = 1; 
+
+    //crear listas de usuarios y todo eso aca, van a ser globales porque son todos threads.
    
     listen_connections((void*)&server_info, server_main, &run); //manejo de errores
 

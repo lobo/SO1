@@ -1,6 +1,7 @@
 SOURCES_NP = $(wildcard ../libraries/libnamedpipe/objects/*.c)
 SOURCES_S = $(wildcard ../libraries/libsocket/objects/*.c)
 SOURCES_G = $(wildcard ../libraries/libgeneral/objects/*.c)
+SOURCES_EXE = $(wildcard src/*.c)
 
 
 ifeq  ($(imp), sockets)
@@ -9,10 +10,10 @@ else
 	SOURCES_C = $(SOURCES_NP)
 endif
 
-SOURCES= $(SOURCES_C) $(SOURCES_G)
+SOURCES= $(SOURCES_C) $(SOURCES_G) $(SOURCES_EXE)
 EXE = server.bin
 GCC = gcc
-GCCFLAGS = -Wall -I./../libraries/includes -lpthread
+GCCFLAGS = -Wall -I./../libraries/includes -I./src -lpthread
 MAIN_C = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
 
