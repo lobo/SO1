@@ -141,7 +141,7 @@ int main(int argc , char *argv[])
 
     fd_set fds;
     int maxfd, r_bytes;
-    char stdin_buffer[20];
+    //char stdin_buffer[20];
 
     // wolf
     char user_input[100];
