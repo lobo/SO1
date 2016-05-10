@@ -119,13 +119,15 @@ void read_user_input(char * user_input){
     char * arguments;
 
     scanf (" %[^\n]%*c", user_input);
-    printf("El texto ingresado fue: %s\n", user_input);
+    //printf("El texto ingresado fue: %s\n", user_input);
+
+    printf("%s\n", user_input);
 
     command = strtok(user_input, " ");
-    printf("Command is: %s\n", command);
+    //printf("Command is: %s\n", command);
 
     arguments = strtok(NULL, "");
-    printf("Arguments are: %s\n", arguments);
+    //printf("Arguments are: %s\n", arguments);
 
     if (arguments != NULL) check_command(command, arguments);
     else check_command(command, "");
