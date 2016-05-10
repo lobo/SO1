@@ -10,6 +10,10 @@
 #define LOGIN_STATUS_FAIL 1
 #define LOGIN_STATUS_BANNED 2
 
+#define QUERY_OK 0
+#define ERROR_GENERIC 100
+#define ERROR_USER_ALREADY_REGISTERED 101
+
 #define USER_NORMAL 0
 #define USER_MOD 1
 #define USER_ADMIN 2
@@ -27,7 +31,7 @@ int login(char* username, char* password, Login_info* login_info);
 int insert_chatlog(char * username, char * message);
 int get_chatlog(char* from, char* to, char** chatlog);
 int delete_username(char * username);
-void db_create();
-
+int db_create();
+int is_db_initiated();
 
 #endif
