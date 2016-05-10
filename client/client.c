@@ -1,6 +1,7 @@
 #include "comm.h"
 #include "error.h"
 #include "serialize.h"
+#include "parser.h"
 #include "tcp_client.h"
 #include <string.h>
 #include <stdio.h>
@@ -41,13 +42,108 @@ void deinit_client(){
     
 }
 
+void check_command(char * command, char * arguments){
+
+    int n_of_arguments = 1;
+    //printf("Los arguments son: %s\n", arguments);
+    //printf("long de los args: %d\n", strlen(arguments));
+
+    if (strlen(arguments) != 0)
+    {
+        arguments = strtok(arguments, " ");
+
+        while ((arguments = strtok(NULL, " ")) != NULL){
+            n_of_arguments++;
+            //printf("Next: %s\n", arguments);
+        }
+
+        //printf("La cantidad de arguments fue: %d\n", n_of_arguments);
+    } else {
+        n_of_arguments = 0;
+    }
+
+    if (strcmp(command, "/login") == 0) {
+        if (n_of_arguments == 3) {
+            printf("Your login works\n");
+        } else {
+            printf("%s\n", FAILED_LOGIN_MSG);
+        }
+    } else if (strcmp(command, "/create") == 0){
+        if (n_of_arguments == 2) {
+            printf("Your create works\n");
+        } else {
+            printf("%s\n", FAILED_CREATE_MSG);
+        }
+    } else if (strcmp(command, "/delete") == 0){
+        if (n_of_arguments == 2) {
+            printf("Your delete works\n");
+        } else {
+            printf("%s\n", FAILED_DELETE_MSG);
+        }
+    } else if (strcmp(command, "/change_color") == 0){
+        if (n_of_arguments == 1) {
+            printf("Your change_color works\n");
+        } else {
+            printf("%s\n", FAILED_CHANGE_COLOR_MSG);
+        }
+    } else if (strcmp(command, "/change_password") == 0){
+        if (n_of_arguments == 3) {
+            printf("Your change_password works\n");
+        } else {
+            printf("%s\n", FAILED_CHANGE_PASSWORD_MSG);
+        }
+    } else if (strcmp(command, "/kick") == 0){
+        if (n_of_arguments == 2) {
+            printf("Your kick works\n");
+        } else {
+            printf("%s\n", FAILED_KICK_MSG);
+        }
+    } else if (strcmp(command, "/ban") == 0){
+        if (n_of_arguments == 2) {
+            printf("Your ban works\n");
+        } else {
+            printf("%s\n", FAILED_BAN_MSG);
+        }
+    } else if (strcmp(command, "/disconnect") == 0){
+        if (n_of_arguments == 0) {
+            printf("Your disconnect works\n");
+        } else {
+            printf("%s\n", FAILED_DISCONNECT_MSG);
+        }
+    }
+}
+
+void read_user_input(char * user_input){
+
+    char * command;
+    char * arguments;
+
+    scanf (" %[^\n]%*c", user_input);
+    printf("El texto ingresado fue: %s\n", user_input);
+
+    command = strtok(user_input, " ");
+    printf("Command is: %s\n", command);
+
+    arguments = strtok(NULL, "");
+    printf("Arguments are: %s\n", arguments);
+
+    if (arguments != NULL) check_command(command, arguments);
+    else check_command(command, "");
+    
+}
+
+
 
 int main(int argc , char *argv[])
 {
 
     fd_set fds;
     int maxfd, r_bytes;
-    //char stdin_buffer[20];
+    char stdin_buffer[20];
+
+    // wolf
+    char user_input[100];
+
 
     init_client("127.0.0.1", 8888);
 
@@ -63,10 +159,11 @@ int main(int argc , char *argv[])
         FD_SET(client_connection_id, &fds); 
         FD_SET(0, &fds);
 
-        select(maxfd+1, &fds, NULL, NULL, NULL); 
+        select(maxfd+1, &fds, NULL, NULL, NULL);
 
         if (FD_ISSET(0, &fds)){
-            //fgets(stdin_buffer, 20, stdin); ACA VA EL PARSER
+            //fgets(stdin_buffer, 20, stdin); 
+            read_user_input(user_input);
         }
         
         if (FD_ISSET(client_connection_id, &fds)){

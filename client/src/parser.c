@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+
 void static check_errors(int argsNumber, int parameters, char * errorMessage) {
 	if (strcmp(errorMessage, FAILED_LOGIN_MSG) == 0)
 	{
@@ -12,7 +13,7 @@ void static check_errors(int argsNumber, int parameters, char * errorMessage) {
     		printf("%s\n", FAILED_LOGIN_MSG);
     	}
 	} else if (strcmp(errorMessage, FAILED_CREATE_MSG) == 0) {
-		if(argsNumber == 3)
+		if(argsNumber == 2)
     	{
     		printf("Succcess!\n");
     	} else {
@@ -61,6 +62,7 @@ void static check_errors(int argsNumber, int parameters, char * errorMessage) {
 		printf("There was some error.\n");
 	}
 }
+
 
 /*
 int
