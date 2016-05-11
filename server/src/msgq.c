@@ -13,7 +13,7 @@ struct msgbuf {
 	char message[MAX_SIZE];
 };
 
-
+/*
 int main(void)
 {
     struct msgbuf buf;
@@ -37,6 +37,7 @@ int main(void)
             perror("msgrcv");
             exit(1);
         }
+
         printf("El mensaje es: \"%s\"\n", buf.message);
         FILE * fp = fopen(LOGS_FILE, "ab");
 	    if (fp != NULL)
@@ -49,4 +50,4 @@ int main(void)
     }
 
     return 0;
-}
+}*/
