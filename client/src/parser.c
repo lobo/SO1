@@ -4,64 +4,114 @@
 #include <stdlib.h>
 
 
-/*
-int
-main()     
-{
-    char * line = malloc(128); 
-    while (1) {
+void check_command(char * command, char * arguments){
 
-	    
-	    fgets(line, 128, stdin);
+    int n_of_arguments = 1;
+    char saved_args[100];
+    char arg1[100], arg2[100], arg3[100];
+    //printf("Los arguments son: %s\n", arguments);
+    //printf("long de los args: %d\n", strlen(arguments));
 
-   		char command[20];
-    	sscanf(line, "%20s ", command);
+    strcpy(saved_args,arguments);
 
-	    line = strchr(line, ' ');
+    if (strlen(arguments) != 0)
+    {
+        arguments = strtok(arguments, " ");
 
-	    printf("The Command is: %s\n", command);
-        //printf("%s\n", line);
-
-        char space[2] = " ";
-        char * token;
-        token = strtok(line, space);
-        int argumentsCount = 0;
-
-        while( token != NULL ) 
-        {
-            //printf( "Token is: %s\n", token);
-            token = strtok(NULL, space);
-            argumentsCount++;
+        while ((arguments = strtok(NULL, " ")) != NULL){
+            n_of_arguments++;
+            //printf("Next: %s\n", arguments);
         }
 
-        printf("El comando tenia args: %d\n", argumentsCount);
+        //printf("La cantidad de arguments fue: %d\n", n_of_arguments);
+    } else {
+        n_of_arguments = 0;
+    }
 
-        if (strcmp(command, "/login") == 0) {
-	    	check_errors(argumentsCount, 3, FAILED_LOGIN_MSG);
-	    } else if (strcmp(command, "/create") == 0){
-	    	check_errors(argumentsCount, 3, FAILED_CREATE_MSG);
-	    } else if (strcmp(command, "/delete") == 0){
-	    	check_errors(argumentsCount, 2, FAILED_DELETE_MSG);
-	    } else if (strcmp(command, "/change_color") == 0){
-	    	check_errors(argumentsCount, 1, FAILED_CHANGE_COLOR_MSG);
-	    } else if (strcmp(command, "/change_password") == 0){
-	    	check_errors(argumentsCount, 3, FAILED_CHANGE_PASSWORD_MSG);
-	    } else if (strcmp(command, "/kick") == 0){
-	    	check_errors(argumentsCount, 2, FAILED_KICK_MSG);
-	    } else if (strcmp(command, "/ban") == 0){
-	    	check_errors(argumentsCount, 2, FAILED_BAN_MSG);
-	    } else if (strcmp(command, "/disconnect") == 0){
-	    	check_errors(argumentsCount, 0, FAILED_DISCONNECT_MSG);
-	    } else {
-	    	//printf("I don't know that command, bro.\n");
-            break;
-	    }
-	}
+    //printf("ylos saved args son: %s\n", saved_args);
 
-    free(line);
-
-	return 0;
+    if (n_of_arguments == 3) {
+        sscanf(saved_args,"%s %s %s", arg1, arg2, arg3);
+    } else if (n_of_arguments == 2) {
+        sscanf(saved_args,"%s %s", arg1, arg2);
+    } else if (n_of_arguments == 1) {
+        sscanf(saved_args,"%s", arg1);
+    } else {
+        // just chatting
+    }
+    //printf("ACA ESTAN LOS PIBES: %s %s %s\n", arg1, arg2, arg3);
+    //printf("And n_of_arguments is: %d\n", n_of_arguments);
+    if (strcmp(command, "/login") == 0) {
+        if (n_of_arguments == 3) {
+            printf("Your login works, and the arguments are: %s %s %s\n", arg1, arg2, arg3);
+        } else {
+            printf("%s\n", FAILED_LOGIN_MSG);
+        }
+    } else if (strcmp(command, "/create") == 0){
+        if (n_of_arguments == 2) {
+            printf("Your create works, and the arguments are: %s %s\n", arg1, arg2);
+        } else {
+            printf("%s\n", FAILED_CREATE_MSG);
+        }
+    } else if (strcmp(command, "/delete") == 0){
+        if (n_of_arguments == 2) {
+            printf("Your delete works, and the arguments are: %s %s\n", arg1, arg2);
+        } else {
+            printf("%s\n", FAILED_DELETE_MSG);
+        }
+    } else if (strcmp(command, "/change_color") == 0){
+        if (n_of_arguments == 1) {
+            printf("Your change_color works, and the arguments are: %s\n", arg1);
+        } else {
+            printf("%s\n", FAILED_CHANGE_COLOR_MSG);
+        }
+    } else if (strcmp(command, "/change_password") == 0){
+        if (n_of_arguments == 3) {
+            printf("Your change_password works, and the arguments are: %s %s %s\n", arg1, arg2, arg3);
+        } else {
+            printf("%s\n", FAILED_CHANGE_PASSWORD_MSG);
+        }
+    } else if (strcmp(command, "/kick") == 0){
+        if (n_of_arguments == 2) {
+            printf("Your kick works, and the arguments are: %s %s\n", arg1, arg2);
+        } else {
+            printf("%s\n", FAILED_KICK_MSG);
+        }
+    } else if (strcmp(command, "/ban") == 0){
+        if (n_of_arguments == 2) {
+            printf("Your ban works, and the arguments are: \n", arg1, arg2);
+        } else {
+            printf("%s\n", FAILED_BAN_MSG);
+        }
+    } else if (strcmp(command, "/disconnect") == 0){
+        if (n_of_arguments == 0) {
+            printf("Your disconnect works, and the arguments are: \n");
+        } else {
+            printf("%s\n", FAILED_DISCONNECT_MSG);
+        }
+    }
 }
-*/
+
+void read_user_input(char * user_input){
+
+    char * command;
+    char * arguments;
+
+    scanf (" %[^\n]%*c", user_input);
+    //printf("El texto ingresado fue: %s\n", user_input);
+
+    printf("%s\n", user_input);
+
+    command = strtok(user_input, " ");
+    //printf("Command is: %s\n", command);
+
+    arguments = strtok(NULL, "");
+    //printf("Arguments are: %s\n", arguments);
+
+    if (arguments != NULL) check_command(command, arguments);
+    else check_command(command, "");
+    
+}
+
 
 
