@@ -79,7 +79,7 @@ void check_command(char * command, char * arguments){
         }
     } else if (strcmp(command, "/ban") == 0){
         if (n_of_arguments == 2) {
-            printf("Your ban works, and the arguments are: \n", arg1, arg2);
+            printf("Your ban works, and the arguments are: %s %s\n", arg1, arg2);
         } else {
             printf("%s\n", FAILED_BAN_MSG);
         }

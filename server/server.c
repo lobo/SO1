@@ -84,7 +84,7 @@ int main(int argc , char *argv[])
 
     //crear listas de usuarios y todo eso aca, van a ser globales porque son todos threads.
    
-    listen_connections((void*)&server_info, server_main, &run); //manejo de errores
+    listen_connections((void *)&server_info, server_main, &run); //manejo de errores
 
     return 0;
 
