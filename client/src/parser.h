@@ -10,4 +10,7 @@
 #define FAILED_BAN_MSG "Command syntax error. Correct format is: /login username reason"
 #define FAILED_DISCONNECT_MSG "Command syntax error. Correct format is: /disconnect"
 
+void check_command(char * command, char * arguments);
+void read_user_input(char * user_input);
+
 #endif
