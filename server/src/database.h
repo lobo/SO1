@@ -13,14 +13,20 @@
 #define QUERY_OK 0
 #define ERROR_GENERIC 100
 #define ERROR_USER_ALREADY_REGISTERED 101
+#define ERROR_PARAM_SIZE 102 //username or pw too long
+#define ERROR_USER_OR_PW_INCORRECT 103
+#define ERROR_USER_BANNED 104
 
 #define USER_NORMAL 0
 #define USER_MOD 1
 #define USER_ADMIN 2
 
+#define SIZE_USERNAME 30
+#define SIZE_PASSWORD 30
+
 typedef struct {
-    char username[30];
-    char password[30];
+    char username[SIZE_USERNAME];
+    char password[SIZE_PASSWORD];
     char privileges;
     int login_status;
 } Login_info;

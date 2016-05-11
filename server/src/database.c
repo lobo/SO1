@@ -7,7 +7,7 @@ int callback(void* NotUsed, int argc, char** argv, char** column_name);
 int login_callback(void* user_login_info, int argc, char** argv, char** column_name);
 int get_chatlog_callback(void* chatlog_ptr, int argc, char** argv, char** column_name);
 
-
+// Main para testear
 /*int main(int argc, char const *argv[])
 {
     Login_info log_info;
@@ -153,31 +153,35 @@ int register_user(char* username, char* password) {
     char sql[160];
     char* errMsg = 0;
 
-    rc = sqlite3_open(db_file, &db);
-
-    if (rc) {
-        fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
-    }
+    if (strlen(username) > SIZE_USERNAME || strlen(password) > SIZE_PASSWORD)
+        rc = ERROR_PARAM_SIZE;
     else {
-        sprintf(sql, "INSERT INTO USERS(USERNAME, PASSWORD, DATE_CREATED) VALUES ('%s', '%s', datetime('now', 'localtime'));", username, password);
+        rc = sqlite3_open(db_file, &db);
 
-        sqlite3_extended_result_codes(db, 1);
-        rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
-        if (rc != SQLITE_OK) {
-            fprintf(stderr, "Couldn't register your username. Error: %s\n", errMsg);
-            sqlite3_free(errMsg);
-        } else {
-            //fprintf(stdout, "Username %s registered successfully\n", username);
+        if (rc) {
+            fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
         }
-    }
+        else {
+            sprintf(sql, "INSERT INTO USERS(USERNAME, PASSWORD, DATE_CREATED) VALUES ('%s', '%s', datetime('now', 'localtime'));", username, password);
 
-    sqlite3_close(db);
+            sqlite3_extended_result_codes(db, 1);
+            rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
+            if (rc != SQLITE_OK) {
+                fprintf(stderr, "Couldn't register your username. Error: %s\n", errMsg);
+                sqlite3_free(errMsg);
+            } else {
+                //fprintf(stdout, "Username %s registered successfully\n", username);
+            }
+        }
 
-    switch (rc) {
-        case SQLITE_ERROR:
-            return ERROR_GENERIC;
-        case SQLITE_CONSTRAINT_UNIQUE:
-            return ERROR_USER_ALREADY_REGISTERED;
+        sqlite3_close(db);
+
+        switch (rc) {
+            case SQLITE_ERROR:
+                return ERROR_GENERIC;
+            case SQLITE_CONSTRAINT_UNIQUE:
+                return ERROR_USER_ALREADY_REGISTERED;
+        }
     }
 
     return rc;
@@ -347,38 +351,42 @@ int login(char* username, char* password, Login_info* login_info) {
     rc = sqlite3_open(db_file, &db);
 
     if (rc) {
-        fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
-        return rc;
+        //fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+    } else {
+        //Search for the user and pw in the DB
+        sprintf(sql, "SELECT USERNAME, PASSWORD, PRIVILEGES, BANNED_FLAG " \
+            "FROM USERS " \
+            "WHERE USERNAME='%s' AND PASSWORD='%s';", username, password);
+
+        strcpy(login_info->username, username);
+        strcpy(login_info->password, password);
+        login_info->login_status = LOGIN_STATUS_FAIL;
+
+        rc = sqlite3_exec(db, sql, login_callback, (void*)login_info, &errMsg);
+
+        if (rc != SQLITE_OK) {
+            //fprintf(stderr, "Couldn't make your request. Error: %s\n", errMsg);
+            sqlite3_free(errMsg);
+        }
+        else if (login_info->login_status == LOGIN_STATUS_FAIL)
+            rc = ERROR_USER_OR_PW_INCORRECT;
+        else if (login_info->login_status == LOGIN_STATUS_BANNED)
+            rc = ERROR_USER_BANNED;
+        else {
+            //Update the last time the user logged in in the DB
+            sprintf(sql, "UPDATE USERS SET LAST_LOGIN = datetime('now', 'localtime') WHERE USERNAME = '%s';", login_info->username);
+            rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
+
+            if (rc != SQLITE_OK) {
+                //fprintf(stderr, "Couldn't make your request. Error: %s\n", errMsg);
+                sqlite3_free(errMsg);
+            }
+
+        }
     }
-
-    //Search for the user and pw in the DB
-    sprintf(sql, "SELECT USERNAME, PASSWORD, PRIVILEGES, BANNED_FLAG " \
-        "FROM USERS " \
-        "WHERE USERNAME='%s' AND PASSWORD='%s';", username, password);
-
-    strcpy(login_info->username, username);
-    strcpy(login_info->password, password);
-    login_info->login_status = LOGIN_STATUS_FAIL;
-
-    rc = sqlite3_exec(db, sql, login_callback, (void*)login_info, &errMsg);
-
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Couldn't make your request. Error: %s\n", errMsg);
-        sqlite3_free(errMsg);
-    }
-
-    //Update the last time the user logged in in the DB
-    sprintf(sql, "UPDATE USERS SET LAST_LOGIN = datetime('now', 'localtime') WHERE USERNAME = '%s';", login_info->username);
-    rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
-
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Couldn't make your request. Error: %s\n", errMsg);
-        sqlite3_free(errMsg);
-    }
-
     sqlite3_close(db);
 
-    return login_info->login_status;
+    return rc;
 }
 
 /*
