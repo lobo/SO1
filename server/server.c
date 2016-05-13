@@ -8,6 +8,7 @@
 #include "user.h"
 #include "tcp_server.h"
 
+
 #define MAX_USERS 100
 //struct para usuarios
 
@@ -69,9 +70,8 @@ void server_main(context_info * context){
          
         if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) context) < 0) //pasar contexto, que contenga new_con y run
             return;
-
-
 }
+
  
 int main(int argc , char *argv[])
 {
@@ -81,6 +81,8 @@ int main(int argc , char *argv[])
     strcpy(server_info.ip, "127.0.0.1");
     server_info.port = 8888;
     int run = 1; 
+
+    logging_daemon(0, stderr); // le pase 2 parametros cualquiera, aun no le doy bola a esos parametros
 
     //crear listas de usuarios y todo eso aca, van a ser globales porque son todos threads.
    
