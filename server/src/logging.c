@@ -44,16 +44,26 @@ void log_error(error_t error_type, char * error_description) {
     // para ver donde mandar esa informacion
 
     // aca stdin deberia ser input_stream
-
-
+    /*
     time_t rawtime;
     struct tm * timeinfo;
 
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
+    */
+
+
+    time_t timer;
+    char formatted_date[26];
+    struct tm* tm_info;
+
+    time(&timer);
+    tm_info = localtime(&timer);
+
+    strftime(formatted_date, 26, "%Y:%m:%d %H:%M:%S", tm_info);
 
     char aux_buff[256];
-    sprintf(aux_buff, "%s - %d: %s", errors_str[error_type], timeinfo->tm_mday, error_description);
+    sprintf(aux_buff, "%s - %s: %s", errors_str[error_type], formatted_date, error_description);
     printf("aux_buff: %s\n", aux_buff);
 
 
