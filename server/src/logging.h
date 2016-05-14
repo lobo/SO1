@@ -11,6 +11,6 @@
 
 typedef enum {INFO, WARNING, ERROR} error_t;
 
-void logging_daemon(error_t error_type, FILE * input_stream);
+void log_error(error_t error_type, char * error_description);
 
 #endif

@@ -7,29 +7,35 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 struct my_msgbuf {
     long mtype;
     char mtext[200];
 };
 
-void logging_daemon(error_t error_type, FILE * input_stream) {
+char * errors_str[3] = {"INFO", "WARNING", "ERROR"};
+
+void log_error(error_t error_type, char * error_description) {
+
     struct my_msgbuf buf;
     int msqid;
     key_t key;
 
     // con esto me conecto al receiver
-    if ((key = ftok("../msgq.c", 'B')) == -1) {
+    /*if ((key = ftok("../server-logs.txt", 'B')) == -1) {
         perror("ftok fallo");
         exit(1);
-    }
+    }*/
+
+    key = 123;
 
     if ((msqid = msgget(key, 0644 | IPC_CREAT)) == -1) {
         perror("msgget fallo");
         exit(1);
     }
 
-    printf("Ya podes escribir...:\n");
+    //printf("Ya podes escribir...:\n");
 
     buf.mtype = 1; // works like this
 
@@ -38,17 +44,21 @@ void logging_daemon(error_t error_type, FILE * input_stream) {
     // para ver donde mandar esa informacion
 
     // aca stdin deberia ser input_stream
-    while(fgets(buf.mtext, sizeof(buf.mtext), stdin) != NULL) {
-        int len = strlen(buf.mtext);
 
-        if (buf.mtext[len-1] == '\n') buf.mtext[len-1] = '\0';
 
-        if (msgsnd(msqid, &buf, len+1, 0) == -1) 
-            perror("msgsnd");
+    time_t rawtime;
+    struct tm * timeinfo;
+
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+
+    char aux_buff[256];
+    sprintf(aux_buff, "%s - %d: %s", errors_str[error_type], timeinfo->tm_mday, error_description);
+    printf("aux_buff: %s\n", aux_buff);
+
+
+    if (msgsnd(msqid, aux_buff, strlen(aux_buff)+1, 0) == -1) {
+        perror("msgsnd failed!");
     }
 
-    if (msgctl(msqid, IPC_RMID, NULL) == -1) {
-        perror("msgctl");
-        exit(1);
-    }  
 }

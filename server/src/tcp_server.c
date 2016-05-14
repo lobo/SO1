@@ -130,6 +130,7 @@ void handle_kick();
 
 void handle_ban();
 
+// log_error(INFO, "User left");
 void handle_disconnect();
 void write_disconnect();
 

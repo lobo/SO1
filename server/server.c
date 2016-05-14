@@ -5,6 +5,7 @@
 #include "comm.h"
 #include "error.h"
 #include "serialize.h"
+#include "logging.h"
 #include "user.h"
 #include "tcp_server.h"
 
@@ -26,12 +27,11 @@ int get_free_index(){
             return i;
     }
 
-
     return -1;
 }
 
 
-void * connection_handler(void *context) //STRUCT DE CONTEXTO = socket_desc
+void * connection_handler(void * context) //STRUCT DE CONTEXTO = socket_desc
 {
 
     context_info * my_context = (context_info*) context;
@@ -65,16 +65,19 @@ void * connection_handler(void *context) //STRUCT DE CONTEXTO = socket_desc
 
 void server_main(context_info * context){
 
-    	pthread_t sniffer_thread;
-        //crear listas de usuario y eso.
-         
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) context) < 0) //pasar contexto, que contenga new_con y run
-            return;
+
+	pthread_t sniffer_thread;
+    //crear listas de usuario y eso.
+     
+    if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) context) < 0) //pasar contexto, que contenga new_con y run
+        log_error(ERROR, "Thread creation");
+        return;
+
+    log_error(INFO, "User connected");
 }
 
  
-int main(int argc , char *argv[])
-{
+int main(int argc , char * argv[]) {
 
     connection_info server_info;
 
@@ -82,7 +85,7 @@ int main(int argc , char *argv[])
     server_info.port = 8888;
     int run = 1; 
 
-    logging_daemon(0, stderr); // le pase 2 parametros cualquiera, aun no le doy bola a esos parametros
+    log_error(INFO, "Opening server"); // le pase 2 parametros cualquiera, aun no le doy bola a esos parametros
 
     //crear listas de usuarios y todo eso aca, van a ser globales porque son todos threads.
    
