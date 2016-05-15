@@ -267,6 +267,7 @@ void handle_ban(int user_index){
 // log_error(INFO, "User left");
 void handle_disconnect(int user_index){
 
+	write_talk(user_index, "Hasta la proxima...", SERVER_COLOR);
 	write_disconnect(user_index);
 
 }
