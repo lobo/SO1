@@ -5,7 +5,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
-#define MAX_SIZE 200
+#define MAX_SIZE 256
 #define LOGFILE_PATH "../logger/logs.txt"
 
 struct msgbuf {
@@ -25,8 +25,6 @@ int main(void)
         exit(1);
     }
     
-    //printf("Listo para recibir mensajes.\n");
-
     while(1) { // corre siempre
         if (msgrcv(msqid, &buf, sizeof(buf.message), 0, 0) == -1) {
             perror("msgrcv");

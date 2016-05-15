@@ -1,5 +1,4 @@
 #include "logging.h"
-
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
@@ -11,7 +10,7 @@
 
 struct my_msgbuf {
     long mtype;
-    char mtext[200];
+    char mtext[256];
 };
 
 char * errors_str[3] = {"INFO", "WARNING", "ERROR"};
@@ -21,12 +20,10 @@ void log_error(error_t error_type, char * error_description) {
     struct my_msgbuf buf;
     int msqid;
     key_t key;
-
-    // con esto me conecto al receiver
-    /*if ((key = ftok("../server-logs.txt", 'B')) == -1) {
-        perror("ftok fallo");
-        exit(1);
-    }*/
+    time_t timer;
+    char formatted_date[26];
+    char aux_buff[256];
+    struct tm* tm_info;
 
     key = 123;
 
@@ -35,25 +32,17 @@ void log_error(error_t error_type, char * error_description) {
         exit(1);
     }
 
-    //printf("Ya podes escribir...:\n");
-
     buf.mtype = 1; // works like this
 
-    // aca falta ver de donde toma los logs
-    // y poner la condicion segun el error que se le pase
-    // para ver donde mandar esa informacion
+    time(&timer);
+    tm_info = localtime(&timer);
+    strftime(formatted_date, 26, "%Y:%m:%d %H:%M:%S", tm_info);
 
-    // aca stdin deberia ser input_stream
-
-
-    time_t rawtime;
-    struct tm * timeinfo;
-
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
-
-    char aux_buff[256];
-    sprintf(aux_buff, "%s - %d: %s", errors_str[error_type], timeinfo->tm_mday, error_description);
+    //printf("El tipo de error es: %s\n", errors_str[error_type]);
+    //printf("La fecha es: %s\n", formatted_date);
+    //printf("El error_description fue: %s\n", error_description);
+    
+    sprintf(aux_buff, "%s - %s: %s", errors_str[error_type], formatted_date, error_description);
     printf("aux_buff: %s\n", aux_buff);
 
 
