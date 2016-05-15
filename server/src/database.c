@@ -1,4 +1,5 @@
 #include "database.h"
+#include "logging.h"
 
 //AGREGAR SERIALIZE CHAR PARA PACKET ID
 
@@ -60,6 +61,7 @@ int db_create() {
 
     if (rc) {
         fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+        log_error(WARNING, "Could not open DB file\n");
     } else {
 
         printf("--> Creating USERS and CHATLOG tables ... ");
@@ -116,6 +118,7 @@ int is_db_initiated() {
 
     if (rc != SQLITE_OK) {
         fprintf(stderr, "--> Can't open DB file: %s\n", sqlite3_errmsg(db));
+        log_error(WARNING, "Could not open DB file\n");
     }
     else {
         sprintf(sql, "SELECT USERNAME FROM USERS WHERE ID = 1");
@@ -160,6 +163,7 @@ int register_user(char* username, char* password) {
 
         if (rc) {
             fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+            log_error(WARNING, "Could not open DB file\n");
         }
         else {
             sprintf(sql, "INSERT INTO USERS(USERNAME, PASSWORD, DATE_CREATED) VALUES ('%s', '%s', datetime('now', 'localtime'));", username, password);
@@ -168,6 +172,8 @@ int register_user(char* username, char* password) {
             rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
             if (rc != SQLITE_OK) {
                 fprintf(stderr, "Couldn't register your username. Error: %s\n", errMsg);
+                log_error(WARNING, "Could not register that username\n");
+                printf("%d\n", WARNING);
                 sqlite3_free(errMsg);
             } else {
                 //fprintf(stdout, "Username %s registered successfully\n", username);
@@ -200,6 +206,7 @@ int update_privileges(char* username, char privilege) {
 
     if (rc) {
         fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+        log_error(WARNING, "Could not open DB file\n");
         return rc;
     }
 
@@ -208,6 +215,7 @@ int update_privileges(char* username, char privilege) {
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Couldn't modify de privileges. Error: %s\n", errMsg);
+        log_error(WARNING, "Could not modify the privileges\n");
         sqlite3_free(errMsg);
     } else {
         fprintf(stdout, "Username %s changed privileges successfully\n", username);
@@ -230,6 +238,7 @@ int delete_username(char * username) {
 
     if (rc) {
         fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+        log_error(WARNING, "Could not open DB file\n");
         exit(1);
     } else {
         fprintf(stdout, "Opened DB successfully\n");
@@ -240,6 +249,7 @@ int delete_username(char * username) {
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Couldn't delete the username. Error: %s\n", errMsg);
+        log_error(WARNING, "Could not delete that username\n");
         sqlite3_free(errMsg);
     } else {
         fprintf(stdout, "Username %s deleted successfully.\n", username);
@@ -265,6 +275,7 @@ int get_chatlog(char* from, char* to, char** chatlog) {
 
     if (rc) {
         fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+        log_error(WARNING, "Could not open DB file\n");
         exit(0);
     } else {
         fprintf(stdout, "Opened DB successfully\n");
@@ -278,6 +289,7 @@ int get_chatlog(char* from, char* to, char** chatlog) {
 
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Couldn't get the chatlog. Error: %s\n", errMsg);
+        log_error(WARNING, "Could not get the chatlog from the DB\n");
         sqlite3_free(errMsg);
     }
 
@@ -319,6 +331,7 @@ int insert_chatlog(char * username, char * message) {
 
     if (rc) {
         fprintf(stderr, "Can't open DB file: %s\n", sqlite3_errmsg(db));
+        log_error(WARNING, "Could not open DB file\n");
         exit(1);
     } else {
         fprintf(stdout, "Opened DB successfully\n");
@@ -329,6 +342,7 @@ int insert_chatlog(char * username, char * message) {
     rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Couldn't log the current chatlog. Error: %s\n", errMsg);
+        log_error(WARNING, "Could not get the chatlog from the DB\n");
         sqlite3_free(errMsg);
     } else {
         fprintf(stdout, "%s logged successfully.\n", username);
