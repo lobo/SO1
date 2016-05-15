@@ -20,7 +20,7 @@ int main(void)
     int msqid;
     key_t key = 123;
 
-    if ((msqid = msgget(key, 0644)) == -1) { 
+    if ((msqid = msgget(key, IPC_CREAT | 0666)) == -1) { 
         perror("msgget error: fallo conectarse a la cola.");
         exit(1);
     }
@@ -43,6 +43,8 @@ int main(void)
 	    }
 
     }
+
+    //destroy cola
 
     return 0;
 }
