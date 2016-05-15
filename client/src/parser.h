@@ -27,8 +27,6 @@
 #define CMD_BAN 8
 #define CMD_LOGOUT 9
 
-int check_command(char * command, char * arguments);
-int read_user_input(char * user_input);
 int parse_cmd(char* msg, char* arg1, char* arg2);
 
 

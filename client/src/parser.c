@@ -159,6 +159,7 @@ int parse_cmd(char* msg, char* arg1, char* arg2) {
 		i++;
 	
 	msg_length = strlen(msg);
+	msg[msg_length - 1] = '\0';		//saco el \n que viene al final porque sino jode.
 	
 	replace_char(msg, ' ', '\0');
 	cmd_length = strlen(msg);
