@@ -25,16 +25,16 @@ extern t_buffer * client_recv_buffer;
 extern connection_info server_info;
 
 typedef enum _packet_id{ 
-	LOGIN,               
-	REGISTER_USER,
-	DELETE_USER,
-	TALK,
-	CHANGE_COLOR,
-	CHANGE_PW,
-	KICK,
-	BAN,
-	DISCONNECT,
-	CHECK_LOGS
+ LOGIN,               
+ REGISTER_USER,
+ DELETE_USER,
+ TALK,
+ CHANGE_COLOR,
+ CHANGE_PW,
+ KICK,
+ BAN,
+ DISCONNECT,
+ CHECK_LOGS
 } packet_id;
 
 char *c_colors[] = {RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE};
@@ -54,8 +54,8 @@ void handle_tcp_packets(){
 
 
         case DISCONNECT:
-        	handle_disconnect();
-        	break;
+         handle_disconnect();
+         break;
 
     }
 
@@ -64,16 +64,16 @@ void handle_tcp_packets(){
 
 
 void write_login(char * username, char * password, char color){
+	
+ if (client_connection_id > 0){
+  printf("Ya estás logeado.\n");
+  return;
+ }
 
-	if (client_connection_id > 0){
-		printf("Ya estás logeado.\n");
-		return;
-	}
+ client_connection_id = connect_to((void*)&server_info);
 
-	client_connection_id = connect_to((void*)&server_info);
-
-	if (client_connection_id < 0){
-    	print_error();
+ if (client_connection_id <= 0){
+     print_error();
         return;
     }
 
@@ -90,16 +90,16 @@ void write_login(char * username, char * password, char color){
 }
 
 void write_register(char * username, char * password){
+	
+ if (client_connection_id > 0){
+  printf("Tenés que desconectarte de tu usuario actual para poder crear otro.\n");
+  return;
+ }
 
-	if (client_connection_id > 0){
-		printf("Tenés que desconectarte de tu usuario actual para poder crear otro.\n");
-		return;
-	}
+ client_connection_id = connect_to((void*)&server_info);
 
-	client_connection_id = connect_to((void*)&server_info);
-
-	if (client_connection_id < 0){
-    	print_error();
+ if (client_connection_id < 0){
+     print_error();
         return;
     }
 
@@ -113,16 +113,16 @@ void write_register(char * username, char * password){
 }
 
 void write_delete(char * username, char * password){
+	
+ if (client_connection_id > 0){
+  printf("Tenés que desconectarte para poder borrar tu usuario.\n");
+  return;
+ }
 
-	if (client_connection_id > 0){
-		printf("Tenés que desconectarte para poder borrar tu usuario.\n");
-		return;
-	}
+ client_connection_id = connect_to((void*)&server_info);
 
-	client_connection_id = connect_to((void*)&server_info);
-
-	if (client_connection_id < 0){
-    	print_error();
+ if (client_connection_id < 0){
+     print_error();
         return;
     }
 
@@ -136,121 +136,122 @@ void write_delete(char * username, char * password){
 }
 
 void write_talk(char * mensaje){
+	
+ if (client_connection_id <= 0){
+  printf("No estás conectado.\n");
+  return;
+ }
 
-	if (client_connection_id < 0){
-		printf("No estás conectado.\n");
-		return;
-	}
+ write_byte(client_send_buffer, TALK);
+ write_string(client_send_buffer, mensaje);
 
-	write_byte(client_send_buffer, TALK);
-	write_string(client_send_buffer, mensaje);
-
-	flush_buffer(client_connection_id, client_send_buffer);
+ flush_buffer(client_connection_id, client_send_buffer);
 
 }
 
 void handle_talk(){
 
-	char mensaje[40];
-	BYTE color;
+ char mensaje[40];
+ BYTE color;
 
-	read_string(client_recv_buffer, mensaje);
-	read_byte(client_recv_buffer, &color);
+ read_string(client_recv_buffer, mensaje);
+ read_byte(client_recv_buffer, &color);
 
-	printf("%s%s%s\n", c_colors[color], mensaje, RESET_COLOR); //colores y eso
+ printf("%s%s%s\n", c_colors[color], mensaje, RESET_COLOR); //colores y eso
 
-	//printf("handle: voy por el %d\n",client_recv_buffer->pos );
+ //printf("handle: voy por el %d\n",client_recv_buffer->pos );
 
 }
 
 void write_change_color(int color){
 
-	if (client_connection_id < 0){
-		printf("No estás conectado.\n");
-		return;
-	}
+ if (client_connection_id <= 0){
+  printf("No estás conectado.\n");
+  return;
+ }
 
-	write_byte(client_send_buffer, CHANGE_COLOR);
-	write_byte(client_send_buffer, color);
+ write_byte(client_send_buffer, CHANGE_COLOR);
+ write_byte(client_send_buffer, color);
 
-	flush_buffer(client_connection_id, client_send_buffer);
+ flush_buffer(client_connection_id, client_send_buffer);
 
 }
 
 void write_change_pw(char * username, char * old_password, char * new_password){
+	
+ if (client_connection_id > 0){
+  printf("Tenés que desconectarte para poder borrar tu usuario.\n");
+  return;
+ }
 
-	if (client_connection_id > 0){
-		printf("Tenés que desconectarte para poder borrar tu usuario.\n");
-		return;
-	}
+ client_connection_id = connect_to((void*)&server_info);
 
-	client_connection_id = connect_to((void*)&server_info);
-
-	if (client_connection_id < 0){
-    	print_error();
+ if (client_connection_id < 0){
+     print_error();
         return;
     }
 
-	write_byte(client_send_buffer, CHANGE_PW);
-	write_string(client_send_buffer, username);
-	write_string(client_send_buffer, old_password);
-	write_string(client_send_buffer, new_password);
+ write_byte(client_send_buffer, CHANGE_PW);
+ write_string(client_send_buffer, username);
+ write_string(client_send_buffer, old_password);
+ write_string(client_send_buffer, new_password);
 
 
-	flush_buffer(client_connection_id, client_send_buffer);
+ flush_buffer(client_connection_id, client_send_buffer);
 
 
 }
 
 void write_kick(char * username, char * reason){
+	
+ if (client_connection_id <= 0){
+  printf("No estás conectado.\n");
+  return;
+ }
 
-	if (client_connection_id < 0){
-		printf("No estás conectado.\n");
-		return;
-	}
+ write_byte(client_send_buffer, KICK);
+ write_string(client_send_buffer, username);
+ write_string(client_send_buffer, reason);
 
-	write_byte(client_send_buffer, KICK);
-	write_string(client_send_buffer, username);
-	write_string(client_send_buffer, reason);
-
-	flush_buffer(client_connection_id, client_send_buffer);
+ flush_buffer(client_connection_id, client_send_buffer);
 
 }
 
 void write_ban(char * username, char * reason){
+	
+ if (client_connection_id <= 0){
+  printf("No estás conectado.\n");
+  return;
+ }
 
-	if (client_connection_id < 0){
-		printf("No estás conectado.\n");
-		return;
-	}
+ write_byte(client_send_buffer, BAN);
+ write_string(client_send_buffer, username);
+ write_string(client_send_buffer, reason);
 
-	write_byte(client_send_buffer, BAN);
-	write_string(client_send_buffer, username);
-	write_string(client_send_buffer, reason);
-
-	flush_buffer(client_connection_id, client_send_buffer);
+ flush_buffer(client_connection_id, client_send_buffer);
 
 }
 
 void write_disconnect(){
 
-	if (client_connection_id < 0){
-		printf("No estás conectado.\n");
-		return;
-	}
+ if (client_connection_id <= 0){
+  printf("No estás conectado.\n");
+  return;
+ }
 
-	write_byte(client_send_buffer, DISCONNECT);
+ write_byte(client_send_buffer, DISCONNECT);
 
-	flush_buffer(client_connection_id, client_send_buffer);
+ flush_buffer(client_connection_id, client_send_buffer);
 
 }
 
 void handle_disconnect(){
 
 
-	run = 0;
-	client_connection_id = -1;
-	//capaz falta algo, chequear. el buffer ya esta limpio
+ client_connection_id = 0;
+ clean_buffer(client_send_buffer);
+ clean_buffer(client_recv_buffer);
+ //capaz falta algo, chequear. el buffer ya esta limpio
 
 
 }
@@ -258,19 +259,13 @@ void handle_disconnect(){
 void write_check_logs(){
 
 
-	if (client_connection_id < 0){
-		printf("No estás conectado.\n");
-		return;
-	}
+ if (client_connection_id <= 0){
+  printf("No estás conectado.\n" );
+  return;
+ }
 
-	write_byte(client_send_buffer, CHECK_LOGS);
+ write_byte(client_send_buffer, CHECK_LOGS);
 
-	flush_buffer(client_connection_id, client_send_buffer);
+ flush_buffer(client_connection_id, client_send_buffer);
 
 }
-
-
-
-
-
-
