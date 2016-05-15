@@ -9,7 +9,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/select.h>
-
+#include <unistd.h>
 
 int client_connection_id;
 int run;
@@ -48,8 +48,13 @@ int main(int argc , char *argv[])
 
     fd_set fds;
     int maxfd, r_bytes;
-    char user_input[100];
-
+    char user_input[256];
+    char arg1[30];
+    char arg2[30];
+	char username[30]; //IDEALMENTE NO TIENE QUE ESTAR ESTO
+	char password[30]; //IDEALMENTE NO TIENE QUE ESTAR ESTO
+	int cmd;
+	
     init_client("127.0.0.1", 8888);
 
     write_register("pedrito", "pedrito123");
@@ -65,7 +70,53 @@ int main(int argc , char *argv[])
         select(maxfd+1, &fds, NULL, NULL, NULL);
 
         if (FD_ISSET(0, &fds)){
-            read_user_input(user_input);
+
+   			fgets(user_input, 256, stdin); 
+			cmd = parse_cmd(user_input, arg1, arg2);
+			
+            switch(cmd) {
+				
+				case CMD_CHAT:
+					write_talk(user_input);
+					break;
+				case CMD_LOGIN:
+					write_login(arg1, arg2, 0);
+					strcpy(username, arg1);	//ESTO NO DEBERIA GUARDARSE ACA
+					strcpy(password, arg2); //ESTO NO DEBERIA GUARDARSE ACA
+					break;
+				case CMD_REGISTER:
+					write_register(arg1, arg2);
+					break;
+				case CMD_LOGOUT:
+					write_disconnect();
+					break;
+				case CMD_CH_PW:
+					write_change_pw(username, arg1, arg2);
+					break;
+				case CMD_CH_PRIVS:
+					//write_change_privileges(arg1, arg2); IMPLEMENTAR (usuario, privilegio)
+					break;
+				case CMD_CH_COLOR:
+					write_change_color((int) *arg1);
+					break;
+				case CMD_DELETE_USER:
+					write_delete(arg1, password); 	//ver de no pasar la pass
+					break;
+				case CMD_KICK:
+					write_kick(arg1, arg2);
+					break;
+				case CMD_BAN:
+					write_ban(arg1, arg2);
+					break;
+				case CMD_ERROR:
+					fprintf(stderr, "Algo se rompió vieja...\n");
+					break;				
+			}
+			
+			printf("El codigo a ejecutar es el numero: %d\n", cmd);
+			*arg1 = '\0';
+			*arg2 = '\0';
+			
         }
         
         if (FD_ISSET(client_connection_id, &fds)){
