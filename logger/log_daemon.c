@@ -42,6 +42,10 @@ int main(void)
 
     }
 
+    if (msgctl(msgid, IPC_RMID, NULL) == -1) {
+        fprintf(stderr, "Message queue could not be deleted.\n");
+    }
+
     //destroy cola
 
     return 0;
