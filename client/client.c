@@ -118,10 +118,12 @@ int main(int argc , char *argv[])
 					break;				
 			}
 			
-			if (arg1 != NULL)
+			if (arg1 != NULL){
 				free(arg1);
-			if (arg2 != NULL)
+			}
+			if (arg2 != NULL){
 				free(arg2);
+			}
 				
 			arg1 = arg2 = NULL;
 			
@@ -132,7 +134,9 @@ int main(int argc , char *argv[])
             r_bytes = load_buffer(client_connection_id, client_recv_buffer);
 
             while (client_recv_buffer->pos + 1 < r_bytes){
+            	
                 handle_tcp_packets();
+                
                 client_recv_buffer->pos+=1;
             }
 

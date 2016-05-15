@@ -113,8 +113,6 @@ void handle_login(int user_index){
 	read_string(user_list[user_index]->recv_buffer, password); 
 	read_byte(user_list[user_index]->recv_buffer, &color);
 
-	printf("Trato de logear con %s y %s. c %d\n", username, password, color);
-
 
 	if(login(username, password, &log_info) != LOGIN_STATUS_SUCCESS) {
 		write_talk(user_index, "Usuario o contraseña inválidos.", ERROR_COLOR);

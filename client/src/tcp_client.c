@@ -54,8 +54,8 @@ void handle_tcp_packets(){
 
 
         case DISCONNECT:
-         handle_disconnect();
-         break;
+            handle_disconnect();
+            break;
 
     }
 
@@ -65,15 +65,15 @@ void handle_tcp_packets(){
 
 void write_login(char * username, char * password, char color){
 	
-  if (client_connection_id > 0){
-    printf(RED "Ya estás logeado.\n" RESET_COLOR);
-    return;
-  }
+    if (client_connection_id > 0){
+      printf(RED "Ya estás logeado.\n" RESET_COLOR);
+      return;
+    }
 
- client_connection_id = connect_to((void*)&server_info);
+    client_connection_id = connect_to((void*)&server_info);
 
     if (client_connection_id <= 0){
-     print_error();
+        print_error();
         return;
     }
 
@@ -138,7 +138,7 @@ void write_delete(char * username, char * password){
 void write_talk(char * mensaje){
 	
    if (client_connection_id <= 0){
-    printf( RED "No estás conectado.\n" RESET_COLOR);
+    printf(RED "%s\n" RESET_COLOR, "No estás conectado.");
     return;
    }
 
