@@ -58,9 +58,7 @@ void * connection_handler(void * context) //STRUCT DE CONTEXTO = socket_desc
 
     }
 
-
    	return NULL;
-     
 }
 
 void server_main(context_info * context){
@@ -92,6 +90,5 @@ int main(int argc , char * argv[]) {
     listen_connections((void *)&server_info, server_main, &run); //manejo de errores
 
     return 0;
-
 }
 
