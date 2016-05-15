@@ -63,12 +63,13 @@ int main(int argc , char *argv[])
     //write_login("pedrito", "pedrito123", 5);
 
     maxfd = 0;
-     
+    client_connection_id = 0;
+    
     while (run){
 
 
         FD_ZERO(&fds);
-        //FD_SET(client_connection_id, &fds); //al establecer conexion tengo que hacerlo.
+        FD_SET(client_connection_id, &fds); //al establecer conexion tengo que hacerlo.
         FD_SET(0, &fds); //stdin
 
         select(maxfd+1, &fds, NULL, NULL, NULL);
