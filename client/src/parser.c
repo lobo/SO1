@@ -141,7 +141,7 @@ int check_command(char * command, char * arguments){
 /**
  * Returns de command code and the arguments 1 and 2 initialized if needed
  */
-int parse_cmd(char* msg, char* arg1, char* arg2) {
+int parse_cmd(char* msg, char** arg1, char** arg2) {
 	
 	int i = 0;
 	int msg_length;
@@ -166,10 +166,12 @@ int parse_cmd(char* msg, char* arg1, char* arg2) {
 		
 	if (msg_length - cmd_length - 1 > 0) {	//Si queda algo despues del comando
 		arg1_length = strlen(msg + cmd_length + 1);
-		strcpy(arg1, msg + cmd_length + 1);
+		*arg1 = malloc(sizeof(char) * arg1_length);
+		strcpy(*arg1, msg + cmd_length + 1);
 		if (msg_length - cmd_length - arg1_length - 2 > 0) { 	//Si hay un 2do arg
 			arg2_length = strlen(msg + arg1_length + 2);
-			strcpy(arg2, msg + cmd_length + arg1_length + 2);
+			*arg2 = malloc(sizeof(char) * arg2_length);
+			strcpy(*arg2, msg + cmd_length + arg1_length + 2);
 		}
 	}
 	

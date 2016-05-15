@@ -27,7 +27,7 @@
 #define CMD_BAN 8
 #define CMD_LOGOUT 9
 
-int parse_cmd(char* msg, char* arg1, char* arg2);
+int parse_cmd(char* msg, char** arg1, char** arg2);
 
 
 #endif

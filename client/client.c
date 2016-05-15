@@ -51,8 +51,8 @@ int main(int argc , char *argv[])
 
     int r_bytes;
     char user_input[256];
-    char arg1[30];
-    char arg2[30];
+    char* arg1 = NULL;
+    char* arg2 = NULL;
 	char username[30]; //IDEALMENTE NO TIENE QUE ESTAR ESTO
 	char password[30]; //IDEALMENTE NO TIENE QUE ESTAR ESTO
 	int cmd;
@@ -76,7 +76,7 @@ int main(int argc , char *argv[])
         if (FD_ISSET(0, &fds)){
 
    			fgets(user_input, 256, stdin); 
-			cmd = parse_cmd(user_input, arg1, arg2);
+			cmd = parse_cmd(user_input, &arg1, &arg2);
 			
             switch(cmd) {
 				
@@ -117,8 +117,12 @@ int main(int argc , char *argv[])
 					break;				
 			}
 			
-			*arg1 = '\0';
-			*arg2 = '\0';
+			if (arg1 != NULL)
+				free(arg1);
+			if (arg2 != NULL)
+				free(arg2);
+				
+			arg1 = arg2 = NULL;
 			
         }
         
