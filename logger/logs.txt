@@ -1,3 +1,9 @@
-016:05:15 00:52:28: Opening server
-- 2016:05:15 00:52:50: Could not register that username
+Mensaje del servidor de tipo INFO
+	Hora: 2016:05:15 02:25:30
+	Descripcion: Opening server
+
+Mensaje del servidor de tipo WARNING
+	Hora: 2016:05:15 02:25:31
+	Descripcion: Could not register that username
+
 

@@ -15,7 +15,7 @@ SOURCES= $(SOURCES_C) $(SOURCES_G) $(SOURCES_EXE) $(SOURCES_DB)
 EXE = server.bin
 GCC = gcc
 GCCFLAGS = -Wall -I./../libraries/includes -I./src 
-GCCEXTRAS = -pthread -Wl,--no-as-needed -ldl
+GCCEXTRAS = -lpthread -ldl
 MAIN_C = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
 

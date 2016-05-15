@@ -38,11 +38,13 @@ void log_error(error_t error_type, char * error_description) {
     tm_info = localtime(&timer);
     strftime(formatted_date, 26, "%Y:%m:%d %H:%M:%S", tm_info);
 
-    //printf("El tipo de error es: %s\n", errors_str[error_type]);
-    //printf("La fecha es: %s\n", formatted_date);
-    //printf("El error_description fue: %s\n", error_description);
+    printf("El tipo de error n: %d\n", error_type);
+    printf("El tipo de error es: %s\n", errors_str[error_type]);
+    printf("La fecha es: %s\n", formatted_date);
+    printf("El error_description fue: %s\n", error_description);
     
-    sprintf(aux_buff, "%s - %s: %s", errors_str[error_type], formatted_date, error_description);
+    sprintf(aux_buff, "        Mensaje del servidor de tipo %s\n\tHora: %s\n\tDescripcion: %s\n", errors_str[error_type], formatted_date, error_description);
+    //sprintf(aux_buff, "12345678912343");
 
     if (msgsnd(msqid, aux_buff, strlen(aux_buff)+1, 0) == -1) {
         perror("msgsnd failed!");
