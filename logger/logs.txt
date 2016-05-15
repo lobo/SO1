@@ -1,9 +1,9 @@
 Mensaje del servidor de tipo INFO
-	Hora: 2016:05:15 02:25:30
+	Hora: 2016:05:15 02:37:57
 	Descripcion: Opening server
 
 Mensaje del servidor de tipo WARNING
-	Hora: 2016:05:15 02:25:31
+	Hora: 2016:05:15 02:38:00
 	Descripcion: Could not register that username
 
 

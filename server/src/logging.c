@@ -17,7 +17,7 @@ char * errors_str[3] = {"INFO", "WARNING", "ERROR"};
 
 void log_error(error_t error_type, char * error_description) {
 
-    //struct my_msgbuf buf;
+    struct my_msgbuf buf;
     int msqid;
     key_t key;
     time_t timer;
@@ -32,7 +32,7 @@ void log_error(error_t error_type, char * error_description) {
         exit(1);
     }
 
-    //buf.mtype = 1; // works like this
+    buf.mtype = 1; // works like this
 
     time(&timer);
     tm_info = localtime(&timer);
@@ -43,10 +43,10 @@ void log_error(error_t error_type, char * error_description) {
     printf("La fecha es: %s\n", formatted_date);
     printf("El error_description fue: %s\n", error_description);
     
-    sprintf(aux_buff, "        Mensaje del servidor de tipo %s\n\tHora: %s\n\tDescripcion: %s\n", errors_str[error_type], formatted_date, error_description);
+    sprintf(buf.mtext, "Mensaje del servidor de tipo %s\n\tHora: %s\n\tDescripcion: %s\n", errors_str[error_type], formatted_date, error_description);
     //sprintf(aux_buff, "12345678912343");
 
-    if (msgsnd(msqid, aux_buff, strlen(aux_buff)+1, 0) == -1) {
+    if (msgsnd(msqid, &buf, sizeof(buf.mtext), 0) == -1) {
         perror("msgsnd failed!");
     }
 
