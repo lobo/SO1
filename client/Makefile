@@ -13,6 +13,7 @@ SOURCES= $(SOURCES_C) $(SOURCES_G) $(SOURCES_EXE)
 EXE = client.bin
 GCC = gcc
 GCCFLAGS = -Wall -I./../libraries/includes -I./src
+GCCEXTRAS = -lpthread -ldl
 MAIN_C = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
 
@@ -23,7 +24,6 @@ $(EXE): $(OBJECTS)
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@
-
 
 clean:
 	rm -rf $(OBJECTS)

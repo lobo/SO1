@@ -17,7 +17,7 @@ char * errors_str[3] = {"INFO", "WARNING", "ERROR"};
 
 void log_error(error_t error_type, char * error_description) {
 
-    struct my_msgbuf buf;
+    //struct my_msgbuf buf;
     int msqid;
     key_t key;
     time_t timer;
@@ -32,7 +32,7 @@ void log_error(error_t error_type, char * error_description) {
         exit(1);
     }
 
-    buf.mtype = 1; // works like this
+    //buf.mtype = 1; // works like this
 
     time(&timer);
     tm_info = localtime(&timer);

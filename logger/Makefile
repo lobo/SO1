@@ -1,10 +1,12 @@
 SOURCES = $(wildcard *.c)
 EXE = logger.bin
 GCC = gcc
+
 GCCFLAGS = -Wall
+GCCEXTRAS = -lpthread -ldl
 
 all:
-	$(GCC) $(GCCFLAGS) $(SOURCES) -o $(EXE)
+	$(GCC) $(GCCFLAGS) $(GCCEXTRAS) $(SOURCES) -o $(EXE)
 
 clean:
 	rm -rf $(EXE)

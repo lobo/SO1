@@ -1,1 +1,3 @@
-016:05:14 22:03:44: Opening server
+016:05:15 00:52:28: Opening server
+- 2016:05:15 00:52:50: Could not register that username
+
