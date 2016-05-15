@@ -13,11 +13,15 @@
 
 int client_connection_id;
 int run;
+fd_set fds;
+int maxfd;
 t_buffer * client_send_buffer;
 t_buffer * client_recv_buffer;
 connection_info server_info;
 
 //select en cliente.
+//sacar los gccextras para que no tire warnings el clang. Del o:c
+//errpres con rojo.
 
 void init_client(char * ip, int port){
 
@@ -37,35 +41,35 @@ void deinit_client(){
 
     delete_buffer(client_send_buffer);
     delete_buffer(client_recv_buffer);
-
-    run = 0;
-    
+    //destruir arg1 y arg2? free
 }
 
 
 int main(int argc , char *argv[])
 {
 
-    fd_set fds;
-    int maxfd, r_bytes;
+
+    int r_bytes;
     char user_input[256];
     char arg1[30];
     char arg2[30];
 	char username[30]; //IDEALMENTE NO TIENE QUE ESTAR ESTO
 	char password[30]; //IDEALMENTE NO TIENE QUE ESTAR ESTO
 	int cmd;
+
 	
     init_client("127.0.0.1", 8888);
 
-    write_register("pedrito", "pedrito123");
+    //write_login("pedrito", "pedrito123", 5);
 
-    maxfd = client_connection_id;
+    maxfd = 0;
      
-    while (1){
+    while (run){
+
 
         FD_ZERO(&fds);
-        FD_SET(client_connection_id, &fds); 
-        FD_SET(0, &fds);
+        //FD_SET(client_connection_id, &fds); //al establecer conexion tengo que hacerlo.
+        FD_SET(0, &fds); //stdin
 
         select(maxfd+1, &fds, NULL, NULL, NULL);
 
@@ -80,7 +84,7 @@ int main(int argc , char *argv[])
 					write_talk(user_input);
 					break;
 				case CMD_LOGIN:
-					write_login(arg1, arg2, 0);
+					write_login(arg1, arg2, 5);
 					strcpy(username, arg1);	//ESTO NO DEBERIA GUARDARSE ACA
 					strcpy(password, arg2); //ESTO NO DEBERIA GUARDARSE ACA
 					break;
@@ -113,7 +117,6 @@ int main(int argc , char *argv[])
 					break;				
 			}
 			
-			printf("El codigo a ejecutar es el numero: %d\n", cmd);
 			*arg1 = '\0';
 			*arg2 = '\0';
 			
@@ -122,13 +125,14 @@ int main(int argc , char *argv[])
         if (FD_ISSET(client_connection_id, &fds)){
 
             r_bytes = load_buffer(client_connection_id, client_recv_buffer);
-    
+
             while (client_recv_buffer->pos + 1 < r_bytes){
                 handle_tcp_packets();
                 client_recv_buffer->pos+=1;
             }
 
             clean_buffer(client_recv_buffer);
+
         }
     }
 

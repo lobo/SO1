@@ -31,6 +31,7 @@ int get_free_index(){
 }
 
 
+
 void * connection_handler(void * context) //STRUCT DE CONTEXTO = socket_desc
 {
 
@@ -42,19 +43,24 @@ void * connection_handler(void * context) //STRUCT DE CONTEXTO = socket_desc
     t_user * new_user = create_user(connection_fd);
     add_user(user_list, new_user, user_index);
 
-    while (1){
+    while (1){ 
 
         if (user_list[user_index] == NULL) //Parche para comandos que no requieren conexion.
             break;
-
+        
         r_bytes = load_buffer(connection_fd, user_list[user_index]->recv_buffer);
         
-        while (user_list[user_index]->recv_buffer->pos + 1 < r_bytes){ //se recibieron dos paquetes juntos.
+        while (user_list[user_index]->recv_buffer->pos + 1 < r_bytes){ //se recibieron dos paquetes juntos o mas.
             handle_tcp_packets(user_index);
             user_list[user_index]->recv_buffer->pos+=1;
         }
-        
+
         clean_buffer(user_list[user_index]->recv_buffer);
+
+        if (user_list[user_index]->connection_descriptor < 0){
+            delete_user(user_list, user_index);
+            break;
+        }
 
     }
 
@@ -71,7 +77,6 @@ void server_main(context_info * context){
         log_error(ERROR, "Thread creation");
         return;
 
-    log_error(INFO, "User connected");
 }
 
  
@@ -83,12 +88,8 @@ int main(int argc , char * argv[]) {
     server_info.port = 8888;
     int run = 1; 
 
-    log_error(INFO, "Opening server"); // le pase 2 parametros cualquiera, aun no le doy bola a esos parametros
-
-    //crear listas de usuarios y todo eso aca, van a ser globales porque son todos threads.
-   
     listen_connections((void *)&server_info, server_main, &run); //manejo de errores
-
+    
     return 0;
 }
 

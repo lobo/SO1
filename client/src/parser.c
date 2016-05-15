@@ -152,11 +152,8 @@ int parse_cmd(char* msg, char* arg1, char* arg2) {
 	del_spaces(msg);
 	
 	if(*msg != '/') {	//Si no empieza con una barra es que estan chateando (no es comando)
-		printf("Recibi un simple chat: %s\n", msg);
 		return CMD_CHAT;
 	}
-
-	printf("Recibi un comando: %s\n", msg);
 	
 	while(msg[i] != ' ' && msg[i] != '\0')
 		i++;

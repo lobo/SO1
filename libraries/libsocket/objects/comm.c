@@ -104,8 +104,9 @@ int listen_connections(void * address, main_handler handler, int* run_condition)
 
     while (*run_condition)
     {
-        new_socket_fd = accept(listener_socket, (struct sockaddr *)&client, (socklen_t*)&c);
         
+        new_socket_fd = accept(listener_socket, (struct sockaddr *)&client, (socklen_t*)&c);
+
         if (new_socket_fd < 0) {
             return raise_error(ERR_CON_REJECTED);
         }

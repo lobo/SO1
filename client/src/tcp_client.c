@@ -2,6 +2,8 @@
 #include "error.h"
 #include <stdio.h>
 #include <string.h>
+#include <sys/select.h>
+
 
 
 #define RED "\x1b[31m"
@@ -16,6 +18,8 @@
 
 extern int client_connection_id;
 extern int run;
+extern fd_set fds;
+extern int maxfd;
 extern t_buffer * client_send_buffer;
 extern t_buffer * client_recv_buffer;
 extern connection_info server_info;
@@ -47,6 +51,12 @@ void handle_tcp_packets(){
         case TALK:
             handle_talk();
             break;
+
+
+        case DISCONNECT:
+        	handle_disconnect();
+        	break;
+
     }
 
 
@@ -67,10 +77,13 @@ void write_login(char * username, char * password, char color){
         return;
     }
 
+    maxfd = client_connection_id;
+    FD_SET(client_connection_id, &fds);
+
     write_byte(client_send_buffer, LOGIN);
     write_string(client_send_buffer, username);
     write_string(client_send_buffer, password);
-    write_int(client_send_buffer, color);
+    write_byte(client_send_buffer, color);
 
     flush_buffer(client_connection_id, client_send_buffer);
 
@@ -139,10 +152,10 @@ void write_talk(char * mensaje){
 void handle_talk(){
 
 	char mensaje[40];
-	int color;
+	BYTE color;
 
 	read_string(client_recv_buffer, mensaje);
-	read_int(client_recv_buffer, &color);
+	read_byte(client_recv_buffer, &color);
 
 	printf("%s%s%s\n", c_colors[color], mensaje, RESET_COLOR); //colores y eso
 
@@ -158,7 +171,7 @@ void write_change_color(int color){
 	}
 
 	write_byte(client_send_buffer, CHANGE_COLOR);
-	write_int(client_send_buffer, color);
+	write_byte(client_send_buffer, color);
 
 	flush_buffer(client_connection_id, client_send_buffer);
 
@@ -235,9 +248,9 @@ void write_disconnect(){
 void handle_disconnect(){
 
 
-	//limpiar buffers
-	//mensaje
-	//disconnect del socket
+	run = 0;
+	client_connection_id = -1;
+	//capaz falta algo, chequear. el buffer ya esta limpio
 
 
 }
@@ -255,9 +268,6 @@ void write_check_logs(){
 	flush_buffer(client_connection_id, client_send_buffer);
 
 }
-
-//comando close client que te ponga el run en 0 y ahi limpie la memoria (buffers por ejemplo).
-
 
 
 

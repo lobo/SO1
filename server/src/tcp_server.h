@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "database.h"
+#include "logging.h"
 
 
 void handle_tcp_packets(int user_index);

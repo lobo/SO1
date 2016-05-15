@@ -6,8 +6,8 @@
 typedef struct _t_user{
     char * name;
     int connection_descriptor;
-    int color;
-    char privileges;
+    BYTE color;
+    BYTE privileges;
     t_buffer * recv_buffer;
     t_buffer * send_buffer;
 }t_user;

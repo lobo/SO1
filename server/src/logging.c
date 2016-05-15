@@ -22,7 +22,6 @@ void log_error(error_t error_type, char * error_description) {
     key_t key;
     time_t timer;
     char formatted_date[26];
-    char aux_buff[256];
     struct tm* tm_info;
 
     key = 123;
@@ -37,13 +36,8 @@ void log_error(error_t error_type, char * error_description) {
     time(&timer);
     tm_info = localtime(&timer);
     strftime(formatted_date, 26, "%Y:%m:%d %H:%M:%S", tm_info);
-
-    printf("El tipo de error n: %d\n", error_type);
-    printf("El tipo de error es: %s\n", errors_str[error_type]);
-    printf("La fecha es: %s\n", formatted_date);
-    printf("El error_description fue: %s\n", error_description);
     
-    sprintf(buf.mtext, "Mensaje del servidor de tipo %s\n\tHora: %s\n\tDescripcion: %s\n", errors_str[error_type], formatted_date, error_description);
+    sprintf(buf.mtext, "%s - Hora: %s - %s\n", errors_str[error_type], formatted_date, error_description);
     //sprintf(aux_buff, "12345678912343");
 
     if (msgsnd(msqid, &buf, sizeof(buf.mtext), 0) == -1) {
