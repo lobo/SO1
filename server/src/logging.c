@@ -44,7 +44,6 @@ void log_error(error_t error_type, char * error_description) {
     
     sprintf(aux_buff, "%s - %s: %s", errors_str[error_type], formatted_date, error_description);
 
-
     if (msgsnd(msqid, aux_buff, strlen(aux_buff)+1, 0) == -1) {
         perror("msgsnd failed!");
     }

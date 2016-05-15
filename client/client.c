@@ -43,25 +43,16 @@ void deinit_client(){
 }
 
 
-
-
-
 int main(int argc , char *argv[])
 {
 
     fd_set fds;
     int maxfd, r_bytes;
-    //char stdin_buffer[20];
-
-    // wolf
     char user_input[100];
-
 
     init_client("127.0.0.1", 8888);
 
-    //write_login("admin", "admin", 5); //debe devolver valor asi hago si es -1, return;
     write_register("pedrito", "pedrito123");
-    //write_talk("hola que tal");
 
     maxfd = client_connection_id;
      
@@ -74,14 +65,12 @@ int main(int argc , char *argv[])
         select(maxfd+1, &fds, NULL, NULL, NULL);
 
         if (FD_ISSET(0, &fds)){
-            //fgets(stdin_buffer, 20, stdin); 
             read_user_input(user_input);
         }
         
         if (FD_ISSET(client_connection_id, &fds)){
 
             r_bytes = load_buffer(client_connection_id, client_recv_buffer);
-
     
             while (client_recv_buffer->pos + 1 < r_bytes){
                 handle_tcp_packets();
@@ -90,14 +79,9 @@ int main(int argc , char *argv[])
 
             clean_buffer(client_recv_buffer);
         }
-        
-
     }
 
     deinit_client();
      
-    //send_disc_message
-    //disconnect
-
     return 0;
 }
