@@ -14,14 +14,15 @@ endif
 SOURCES= $(SOURCES_C) $(SOURCES_G) $(SOURCES_EXE) $(SOURCES_DB)
 EXE = server.bin
 GCC = gcc
-GCCFLAGS = -Wall -I./../libraries/includes -I./src -lpthread -ldl
+GCCFLAGS = -Wall -I./../libraries/includes -I./src 
+GCCEXTRAS = -lpthread -ldl
 MAIN_C = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
 
 all: $(EXE)
 
 $(EXE): $(OBJECTS)
-	$(GCC) $(GCCFLAGS) $(MAIN_C) -o $(EXE) $(OBJECTS)
+	$(GCC) $(GCCFLAGS) $(GCCEXTRAS) $(MAIN_C) -o $(EXE) $(OBJECTS)
 
 %.o: %.c
 	$(GCC) $(GCCFLAGS) -c $< -o $@

@@ -21,32 +21,33 @@ int main(void)
     key_t key = 123;
 
     if ((msqid = msgget(key, IPC_CREAT | 0666)) == -1) { 
-        perror("msgget error: fallo conectarse a la cola.");
-        exit(1);
+        perror("Error while trying to create MQ");
+        return -1;
     }
     
     while(1) { // corre siempre
+        
         if (msgrcv(msqid, &buf, sizeof(buf.message), 0, 0) == -1) {
-            perror("msgrcv");
-            exit(1);
+            perror("Error while trying to recieve from MQ");
+            return -1;
         }
 
-        printf("El mensaje es: \"%s\"\n", buf.message);
-        FILE * fp = fopen(LOGFILE_PATH, "ab");
-	    if (fp != NULL)
-	    {
-	        fputs(buf.message, fp);
-	        fprintf(fp, "\n");
-	        fclose(fp);
+        FILE * fp = fopen(LOGFILE_PATH, "a");
+
+	    if (fp == NULL){
+            perror("Error while trying to create the log file");
+            return -1;
 	    }
 
+        fprintf(fp,"%s\n", buf.message);
+        fclose(fp);
     }
 
-    if (msgctl(msgid, IPC_RMID, NULL) == -1) {
-        fprintf(stderr, "Message queue could not be deleted.\n");
+    if (msgctl(msqid, IPC_RMID, NULL) == -1) {
+        fprintf(stderr, "Error while trying to delete MQ\n");
+        return -1;
     }
 
-    //destroy cola
 
     return 0;
 }

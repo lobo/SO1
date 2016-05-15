@@ -7,7 +7,7 @@ all:
 	$(GCC) $(GCCFLAGS) $(SOURCES) -o $(EXE)
 
 clean:
-	rm -rf $(OBJECTS)
 	rm -rf $(EXE)
+	rm -rf "logs.txt"
 
 .PHONY: clean 

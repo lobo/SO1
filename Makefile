@@ -12,9 +12,10 @@ logger:
 clean:
 	cd client; make clean imp=$(imp)
 	cd server; make clean imp=$(imp)
+	cd logger; make clean
 
 run:
-	cd logger; ./logger.bin
+	cd logger; ./logger.bin &
 	cd server; ./server.bin
 
 .PHONY: client server logger run

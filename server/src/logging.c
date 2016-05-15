@@ -43,7 +43,6 @@ void log_error(error_t error_type, char * error_description) {
     //printf("El error_description fue: %s\n", error_description);
     
     sprintf(aux_buff, "%s - %s: %s", errors_str[error_type], formatted_date, error_description);
-    printf("aux_buff: %s\n", aux_buff);
 
 
     if (msgsnd(msqid, aux_buff, strlen(aux_buff)+1, 0) == -1) {
