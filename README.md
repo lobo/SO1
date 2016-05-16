@@ -2,6 +2,8 @@
 1. Open a terminal and in the root of this project, run: `make clean`, `make`, `make run`.
 2. In another terminal: `cd ./client` and run: `./client.bin`
 
+Note: you may open as many clients as you want.
+
 ## Commands to use in the chatroom:
 
 Commands are to be executed in the following way: `/command param1 param2`
