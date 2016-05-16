@@ -26,9 +26,8 @@ void log_error(error_t error_type, char * error_description) {
 
     key = 123;
 
-    if ((msqid = msgget(key, 0644 | IPC_CREAT)) == -1) {
-        perror("msgget fallo");
-        exit(1);
+    if ((msqid = msgget(key, 0666)) == -1) {
+        return;
     }
 
     buf.mtype = 1; // works like this

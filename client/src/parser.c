@@ -1,10 +1,10 @@
 #include "parser.h"
 
-static char* all_cmds[] = {"login", "register", "logout", "change_password", "change_privileges", "change_color", "delete", "kick", "ban"};
-static int cmds_amount = 9;
+static char* all_cmds[] = {"login", "register", "logout", "change_password", "change_privileges", "change_color", "delete", "kick", "ban", "get_online_users", "help"};
+static int cmds_amount = 11;
 
 void del_spaces(char* str);
-void replace_char(char* str, char c1, char c2);
+void separate_args(char* str);
 
 /**
  * Returns de command code and the arguments 1 and 2 initialized if needed
@@ -29,7 +29,7 @@ int parse_cmd(char* msg, char** arg1, char** arg2) {
 	msg_length = strlen(msg);
 	msg[msg_length - 1] = '\0';		//saco el \n que viene al final porque sino jode.
 	
-	replace_char(msg, ' ', '\0');
+	separate_args(msg);
 	cmd_length = strlen(msg);
 		
 	if (msg_length - cmd_length - 1 > 0) {	//Si queda algo despues del comando
@@ -37,10 +37,19 @@ int parse_cmd(char* msg, char** arg1, char** arg2) {
 		*arg1 = malloc(sizeof(char) * arg1_length);
 		strcpy(*arg1, msg + cmd_length + 1);
 		if (msg_length - cmd_length - arg1_length - 2 > 0) { 	//Si hay un 2do arg
-			arg2_length = strlen(msg + arg1_length + 2);
+			//printf("Inicio arg2: %c\n", *(msg + cmd_length + arg1_length + 2));
+			arg2_length = strlen(msg + cmd_length + arg1_length + 2);
 			*arg2 = malloc(sizeof(char) * arg2_length);
 			strcpy(*arg2, msg + cmd_length + arg1_length + 2);
+			//printf("Arg 2: %s\n", *arg2);
 		}
+	}
+	
+	//printf("MSG_LEN: %d\nCMD LEN: %d\nARG1 LEN: %d\nARG2 LEN: %d\n", msg_length, cmd_length, arg1_length, arg2_length);
+	
+	if (cmd_length + arg1_length + arg2_length + 2 < msg_length - 1) {
+		fprintf(stderr, "Demasiados argumentos\n");
+		return CMD_ERROR;
 	}
 	
 	for (int j = 0; j < cmds_amount; j++)
@@ -71,8 +80,8 @@ int parse_cmd(char* msg, char** arg1, char** arg2) {
 					}
 					return CMD_LOGOUT;
 					
-				case 3:		//change_password old_pass new_pass
-					if (arg2_length == 0) {
+				case 3:		//change_password new_pass
+					if (arg1_length == 0 || arg2_length != 0) {
 						fprintf(stderr, FAILED_CHANGE_PASSWORD_MSG);
 						j = cmds_amount;
 						break;
@@ -96,7 +105,7 @@ int parse_cmd(char* msg, char** arg1, char** arg2) {
 					return CMD_CH_COLOR;
 					
 				case 6:		//delete username
-					if (arg1_length == 0 || arg2_length != 0) {
+					if (arg1_length == 0) {
 						fprintf(stderr, FAILED_DELETE_MSG);
 						j = cmds_amount;
 						break;
@@ -105,7 +114,7 @@ int parse_cmd(char* msg, char** arg1, char** arg2) {
 					
 				case 7:		//kick username reason
 					if (arg2_length == 0) {
-						fprintf(stderr, FAILED_CHANGE_PRIVILEGES_MSG);
+						fprintf(stderr, FAILED_KICK_MSG);
 						j = cmds_amount;
 						break;
 					}
@@ -113,14 +122,28 @@ int parse_cmd(char* msg, char** arg1, char** arg2) {
 					
 				case 8:		//ban username reason
 					if (arg2_length == 0) {
-						fprintf(stderr, FAILED_CHANGE_PRIVILEGES_MSG);
+						fprintf(stderr, FAILED_BAN_MSG);
 						j = cmds_amount;
 						break;
 					}
 					return CMD_BAN;
+					
+				case 9:		//get_online_users
+					if (arg1_length != 0) {
+						fprintf(stderr, FAILED_GET_ONLINE_USERS);
+						j = cmds_amount;
+						break;
+					}
+					return CMD_GET_ONLINE_USERS;
+				case 10:	//help
+					if (arg1_length != 0) {
+						fprintf(stderr, FAILED_GET_ONLINE_USERS);
+						j = cmds_amount;
+						break;
+					}
+					return CMD_HELP;
 			}
 		}
-		
 	return CMD_ERROR;
 }
 
@@ -139,25 +162,32 @@ void del_spaces(char* str){
 	while (*str++ != 0){
 		if (*str != ' ')
 			*str2++ = *str;
-		else{
+		else {
 			if (*(str+1) == ' ')
 				continue;
 			else
 				*str2++ = *str;
-			}
+		}
 	}
 }
 
 /**
- * Reemplaza el char c1 por c2 en todo un string.
+ * Separo mis argumentos de mi mensaje
  */
- void replace_char(char* str, char c1, char c2) {
+ void separate_args(char* str) {
+	 int true = 0;
 	 while (*str != '\0') {
-		if (*str == c1)
-			*str = c2;
+		if (*str == '\'' || *str == '\"') {
+			true = 1;
+			do {
+				str++;
+				if (*str == '\'' || *str == '\"' || *str == '\0')
+					true = 0;
+			} while (true);
+		}
+		if (*str == ' ') {
+			*str = '\0';
+		}
 		str++;
 	}
  }
-
-
-

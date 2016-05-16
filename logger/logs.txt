@@ -1,0 +1,8 @@
+INFO - Hora: 2016:05:16 12:38:19 - User registered
+
+INFO - Hora: 2016:05:16 12:38:19 - User connected
+
+INFO - Hora: 2016:05:16 12:38:40 - User registered
+
+INFO - Hora: 2016:05:16 12:38:40 - User connected
+

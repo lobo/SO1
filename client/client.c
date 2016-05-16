@@ -11,6 +11,9 @@
 #include <sys/select.h>
 #include <unistd.h>
 
+#define STDIN_BUFFER_SIZE 256
+#define DEFAULT_COLOR 6
+
 int client_connection_id;
 int run;
 fd_set fds;
@@ -18,6 +21,8 @@ int maxfd;
 t_buffer * client_send_buffer;
 t_buffer * client_recv_buffer;
 connection_info server_info;
+
+void show_help();
 
 //select en cliente.
 //sacar los gccextras para que no tire warnings el clang. Del o:c
@@ -50,11 +55,9 @@ int main(int argc , char *argv[])
 
 
     int r_bytes;
-    char user_input[256];
+    char user_input[STDIN_BUFFER_SIZE];
     char* arg1 = NULL;
     char* arg2 = NULL;
-	char username[30]; //IDEALMENTE NO TIENE QUE ESTAR ESTO
-	char password[30]; //IDEALMENTE NO TIENE QUE ESTAR ESTO
 	int cmd;
 
 	
@@ -76,7 +79,11 @@ int main(int argc , char *argv[])
 
         if (FD_ISSET(0, &fds)){
 
-   			fgets(user_input, 256, stdin); 
+   			fgets(user_input, STDIN_BUFFER_SIZE, stdin);
+   			
+   			if (*user_input == '\n')
+				continue;
+   			
 			cmd = parse_cmd(user_input, &arg1, &arg2);
 			
             switch(cmd) {
@@ -85,9 +92,7 @@ int main(int argc , char *argv[])
 					write_talk(user_input);
 					break;
 				case CMD_LOGIN:
-					write_login(arg1, arg2, 5);
-					strcpy(username, arg1);	//ESTO NO DEBERIA GUARDARSE ACA
-					strcpy(password, arg2); //ESTO NO DEBERIA GUARDARSE ACA
+					write_login(arg1, arg2, DEFAULT_COLOR);
 					break;
 				case CMD_REGISTER:
 					write_register(arg1, arg2);
@@ -96,16 +101,16 @@ int main(int argc , char *argv[])
 					write_disconnect();
 					break;
 				case CMD_CH_PW:
-					write_change_pw(username, arg1, arg2);
+					write_change_pw(arg1);
 					break;
 				case CMD_CH_PRIVS:
-					//write_change_privileges(arg1, arg2); IMPLEMENTAR (usuario, privilegio)
+					write_change_privileges(arg1, (unsigned char)(*arg2 - '0'));
 					break;
 				case CMD_CH_COLOR:
-					write_change_color((int) *arg1);
+					write_change_color((unsigned char)(*arg1 - '0'));
 					break;
 				case CMD_DELETE_USER:
-					write_delete(arg1, password); 	//ver de no pasar la pass
+					write_delete();
 					break;
 				case CMD_KICK:
 					write_kick(arg1, arg2);
@@ -113,8 +118,14 @@ int main(int argc , char *argv[])
 				case CMD_BAN:
 					write_ban(arg1, arg2);
 					break;
+				case CMD_GET_ONLINE_USERS:
+					write_get_online_users();
+					break;
+				case CMD_HELP:
+					show_help();
+					break;
 				case CMD_ERROR:
-					fprintf(stderr, "Algo se rompió vieja...\n");
+					fprintf(stderr, "Comando no reconocido. Escriba /help para ver la lista de comandos...\n");
 					break;				
 			}
 			
@@ -124,28 +135,39 @@ int main(int argc , char *argv[])
 			if (arg2 != NULL){
 				free(arg2);
 			}
-				
-			arg1 = arg2 = NULL;
 			
+			arg1 = arg2 = NULL;
         }
         
         if (FD_ISSET(client_connection_id, &fds)){
-
             r_bytes = load_buffer(client_connection_id, client_recv_buffer);
 
             while (client_recv_buffer->pos + 1 < r_bytes){
-            	
                 handle_tcp_packets();
                 
                 client_recv_buffer->pos+=1;
             }
 
             clean_buffer(client_recv_buffer);
-
         }
     }
 
     deinit_client();
      
     return 0;
+}
+
+void show_help() {
+	printf("\nFunciones fuera del chat:\n");
+	printf("--> /login usuario contraseña\n");
+	printf("--> /register usuario contraseña\n\n");
+	printf("Funciones dentro del chat:\n");
+	printf("--> /change_password contraseña_nueva\n");
+	printf("--> /change_color color\n");
+	printf("--> /change_privileges usuario privilegios_nuevos\n");
+	printf("--> /delete\n");
+	printf("--> /get_online_users\n");
+	printf("--> /kick usuario 'razon'\n");
+	printf("--> /ban usuario 'razon'\n");
+	printf("--> /logout\n\n");
 }

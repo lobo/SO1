@@ -6,6 +6,8 @@
 #include <string.h>
 #include "sqlite3/sqlite3.h"
 
+#define DB_FILE "chatroom.db"
+
 #define LOGIN_STATUS_SUCCESS 0
 #define LOGIN_STATUS_FAIL 1
 #define LOGIN_STATUS_BANNED 2
@@ -16,6 +18,7 @@
 #define ERROR_PARAM_SIZE 102 //username or pw too long
 #define ERROR_USER_OR_PW_INCORRECT 103
 #define ERROR_USER_BANNED 104
+#define ERROR_NOT_UPDATED 105
 
 #define USER_NORMAL 0
 #define USER_MOD 1
@@ -39,5 +42,7 @@ int get_chatlog(char* from, char* to, char** chatlog);
 int delete_username(char * username);
 int db_create();
 int is_db_initiated();
+int set_user_banned(char* username, char flag);
+int change_password(char* username, char* password);
 
 #endif
