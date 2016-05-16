@@ -15,8 +15,11 @@
 #define MAX_USERS 100
 //struct para usuarios
 
-t_user * user_list[MAX_USERS];
+t_user * user_list[MAX_USERS] = { NULL };
 int connected_users;
+int max_index = -1;
+
+pthread_mutex_t user_assign;
 
 //generate index
 //name to index
@@ -38,11 +41,22 @@ void * connection_handler(void * context) //STRUCT DE CONTEXTO = socket_desc
 
     context_info * my_context = (context_info*) context;
     int connection_fd = my_context->new_connection_descriptor;
+
+    //
+    pthread_mutex_lock(&user_assign);
     int user_index = get_free_index();
     int r_bytes;
 
     t_user * new_user = create_user(connection_fd);
     add_user(user_list, new_user, user_index);
+    pthread_mutex_unlock(&user_assign);
+    //
+
+
+
+    if (user_index > max_index){
+        max_index = user_index;
+    }
 
     while (1){ 
 
@@ -85,7 +99,7 @@ int main(int argc , char * argv[]) {
 
     connection_info server_info;
 
-    strcpy(server_info.ip, "127.0.0.1");
+    strcpy(server_info.ip, "192.168.43.18");
     server_info.port = 8888;
     int run = 1;
 

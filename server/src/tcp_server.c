@@ -26,14 +26,16 @@ typedef enum _packet_id{ //comando para admin : kILL server
 
 extern t_user * user_list[MAX_USERS];
 extern int connected_users;
+extern int max_index;
 
 int name_to_index(char * name){
 
-    for (int i = 0; i < connected_users; i++){
-
-        if (strcmp(user_list[i]->name, name) == 0){
-            return i;
-        }
+    for (int i = 0; i <= max_index; i++){
+    	if (user_list[i]->logged){
+	        if (strcmp(user_list[i]->name, name) == 0){
+	            return i;
+	        }
+    	}
     }
 
     return -1;
@@ -114,8 +116,8 @@ void server_login(int user_index, char * username, char color, char privileges){
 	char aux_buffer[AUX_BUFFER_SIZE];
 	sprintf(aux_buffer, "Servidor>> Se conectó %s a la sala.", username);
 
-	for (int i = 0; i < connected_users; i++){
-		write_talk(i, aux_buffer, SERVER_COLOR);
+	for (int i = 0; i <= max_index; i++){
+		if (user_list[i]->logged && (i != user_index)) write_talk(i, aux_buffer, SERVER_COLOR);
 	}
 
 	connected_users++;
@@ -133,8 +135,7 @@ void handle_login(int user_index){
 	read_string(user_list[user_index]->recv_buffer, username); 
 	read_string(user_list[user_index]->recv_buffer, password); 
 	read_byte(user_list[user_index]->recv_buffer, &color);
-
-
+	
 	int ret_val = login(username, password, &log_info);
 
 	if (ret_val != QUERY_OK){
@@ -160,6 +161,8 @@ void handle_login(int user_index){
 		sprintf(aux_buff,"%s", username);
 	}
 
+
+	
 	if ((user_already_online(aux_buff))){
 		write_talk(user_index, "Ese usuario ya está logeado.", ERROR_COLOR);
 		write_disconnect(user_index);
@@ -167,10 +170,8 @@ void handle_login(int user_index){
 	}
 
 	server_login(user_index, aux_buff, color, log_info.privileges);
-
 	write_talk(user_index, WELCOME_MSG, SERVER_COLOR);
-
-
+	
 }
 
 void handle_register(int user_index) {
@@ -190,8 +191,8 @@ void handle_register(int user_index) {
 
 	server_login(user_index, username, DEFAULT_COLOR, USER_NORMAL);
 
-
 	write_talk(user_index, WELCOME_MSG, SERVER_COLOR);
+	
 }
 
 void handle_delete(int user_index){
@@ -205,63 +206,25 @@ void handle_delete(int user_index){
 
 void handle_change_privs(int user_index) {
 	char username[MAIN_BUFFER_SIZE];
-	//char* new_name = NULL;
-	//char aux_buff[AUX_BUFFER_SIZE];
 	BYTE new_privilege;
 	
 	read_string(user_list[user_index]->recv_buffer, username);
 	read_byte(user_list[user_index]->recv_buffer, &new_privilege);
-	
-	printf("New privilege: %d\nUser privilege: %d\n", new_privilege, user_list[user_index]->privileges);
+
 	
 	if (user_list[user_index]->privileges == 1) {
 		write_talk(user_index, "Usted no tiene permisos para cambiar privilegios de usuarios.", ERROR_COLOR);
 		log_error(WARNING, "Intento cambiar permisos siendo USER_NORMAL.");
-		//printf("1\n");
 		return;
 	}
 	else if (user_list[user_index]->privileges < new_privilege) {
 		write_talk(user_index, "Usted no tiene suficientes permisos para realizar esa acción.", ERROR_COLOR);
 		log_error(WARNING, "Intentó cambiar permisos sin tener suficiente acceso.");
-		//printf("2\n");
 		return;
 	}
-	//printf("3\n");
 
 	if(update_privileges(username, new_privilege))
 		write_talk(user_index, "Por alguna razon no se lograron cambiar los privilegios.", ERROR_COLOR);
-	/*else {	//queria que el cambio se haga en el momento con el user loggeado, pero esta tirando seg_fault
-		if (new_privilege == 0) {
-			new_name = malloc(sizeof(char) * strlen(username));
-			strcpy(new_name, username);
-			printf("1\n");
-		}
-		else {
-			new_name = malloc(sizeof(char) * (strlen(username) + 1));
-			*(new_name+1) = '\0';
-			printf("2\n");
-			if (new_privilege == 1)
-				*new_name = '+';
-			else if (new_privilege == 2)
-				*new_name = '*';
-			strcpy(new_name+1, username);
-		}
-		printf("3\n");
-		
-		int target_index = name_to_index(username);
-		sprintf(aux_buff, "Servidor>> %s --> %s", user_list[target_index]->name, new_name);
-		printf("%s\n", aux_buff);
-		
-		printf("a\n");
-		for (int i = 0; i < connected_users ; i++)
-			write_talk(i, aux_buff, SERVER_COLOR);
-		
-		printf("4\n");
-		free(user_list[target_index]->name);
-		user_list[target_index]->name = new_name;
-		
-		write_talk(user_index, "Los privilegios del usuario se cambiaron con éxito.", SERVER_COLOR);
-	}*/
 }
 
 void handle_talk(int user_index){ //user index es el ejecutante. target a quien se lo mando.
@@ -275,14 +238,16 @@ void handle_talk(int user_index){ //user index es el ejecutante. target a quien 
 
 	insert_chatlog(user_list[user_index]->name, data); //guardo los logs
 
-	for (int i = 0; i < connected_users; i++){
-		write_talk(i, message, color);
+	for (int i = 0; i <= max_index; i++){
+		if (user_list[i]->logged) 
+			write_talk(i, message, color);
 	}
 
 }
 
 void write_talk(int target_index, char * message, int color){
 
+	
 	write_byte(user_list[target_index]->send_buffer, TALK);
 	write_string(user_list[target_index]->send_buffer, message);
 	write_byte(user_list[target_index]->send_buffer, color);
@@ -320,12 +285,14 @@ void handle_kick(int user_index){
 		write_talk(user_index, "No tenés suficientes privilegios.", ERROR_COLOR);
 		return;
 	}
+	
 
 	sprintf(aux_buff, "Kickeado por: %s. Motivo: %s", user_list[user_index]->name, reason);
 
 	int target_index = name_to_index(username);
 	write_talk(target_index, aux_buff, SERVER_COLOR);
-	handle_disconnect(target_index);
+
+	write_disconnect(target_index);
 
 }
 
@@ -351,7 +318,6 @@ void handle_ban(int user_index){
 
 }
 
-// log_error(INFO, "User left");
 void handle_disconnect(int user_index){
 
 	write_talk(user_index, "Hasta la proxima...", SERVER_COLOR);
@@ -374,11 +340,11 @@ void write_disconnect(int user_index){
 
 		connected_users--;
 
-		char aux_buffer[75];
+		char aux_buffer[AUX_BUFFER_SIZE];
 		sprintf(aux_buffer, "Servidor>> Se desconectó %s de la sala.", user_list[user_index]->name);
 
-		for (int i = 0; i < connected_users; i++){
-			write_talk(i, aux_buffer, SERVER_COLOR);
+		for (int i = 0; i <= max_index; i++){
+			if (user_list[i]->logged && (i != user_index)) write_talk(i, aux_buffer, SERVER_COLOR);
 		}
 
 		log_error(INFO, "User disconnected"); //cambiar nombre a esta pija
@@ -403,15 +369,15 @@ void handle_users_online(int user_index){
 	
 	strcpy(aux_buffer, init_string);
 
-	for (int i=0; i < connected_users; i++){
-		strcat(aux_buffer, "\n");
-		strcat(aux_buffer, user_list[i]->name);
+	for (int i=0; i <= max_index; i++){
+		if (user_list[i]->logged) {
+			strcat(aux_buffer, "\n");
+			strcat(aux_buffer, user_list[i]->name);
+		}
 	}
 	strcat(aux_buffer, "\n");
 
 	write_talk(user_index, aux_buffer, SERVER_COLOR);
 
 }
-
-
 
